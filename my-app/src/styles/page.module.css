@@ -1,0 +1,143 @@
+:root {
+  --dark-bg: #1e1e1e;
+  --light-box: #d9d9d9;
+  --text-dark: #000;
+  --text-white: #fff;
+  --radius: 15px;
+}
+
+.container {
+  padding: 20px;
+  min-height: 100vh;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header styling */
+.header {
+  background-color: var(--dark-bg);
+  color: var(--text-white);
+  padding: 15px 30px;
+  border-radius: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logoGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #2e7d32;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.topNav {
+  display: flex;
+  gap: 30px;
+}
+
+/* Grid */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 20px;
+  flex-grow: 1;
+}
+
+.leftCol, .rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Felles boks-styling */
+.box {
+  background-color: var(--light-box);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: var(--text-dark);
+}
+
+.imagePlaceholder {
+  height: 400px;
+}
+
+.inputArea {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.promptBox {
+  width: 100%;
+  height: 60px;
+}
+
+.promptBox input {
+  width: 90%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-weight: bold;
+  text-align: center;
+}
+
+.generateBtn {
+  background-color: var(--light-box);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Høyre side styling */
+.scoreBoard {
+  height: 100px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.scoreItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.resultBox {
+  flex-grow: 1;
+  min-height: 400px;
+}
+
+/* Settings/Logout */
+.footerActions {
+  background-color: var(--dark-bg);
+  color: var(--text-white);
+  width: fit-content;
+  padding: 20px;
+  border-radius: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.actionItem {
+  cursor: pointer;
+  font-size: 0.9rem;
+}
