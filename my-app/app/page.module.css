@@ -1,0 +1,764 @@
+/* page.module.css */
+
+
+.main {
+  padding: 20px;
+}
+
+/*
+ * Ytterste kontainer for miljøbilde- og resultat-delen.
+ * Bruker CSS Grid med to like kolonner for side-ved-side layout.
+ * Respondsiv: blir en kolonne på mindre skjermer hvis nødvendig.
+ */
+
+.Miljøbilde {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/*
+ * Stilarkarkitektur for konfigurerings-seksjonen (venstre side).
+ * Inneholder template-valg, produktvalg og plasseringsinstruksjoner.
+ */
+
+.configSection {
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/*
+ * Tema-stilarkarkitektur for konfigurerings-seksjonen i mørk modus.
+ * Bruker mørkegrå farger for bakgrunn og lette tekstfarger for kontrast.
+ */
+
+.configSection.dark {
+  border: 1px solid #333333;
+  background-color: #1a1a1a;
+  color: #ededed;
+}
+
+/*
+ * Tema-stilarkarkitektur for konfigurerings-seksjonen i lyst modus.
+ * Bruker hvit bakgrunn og mørk tekst for lesbarhet.
+ */
+
+.configSection.light {
+  border: 1px solid #d5d5d5;
+  background-color: #ffffff;
+  color: #1a1a1a;
+}
+
+/*
+ * Stilarkitektur for resultat-seksjonen (høyre side).
+ * Viser genererte bilder og tillater valg av beste variant.
+ */
+
+.resultSection {
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/*
+ * Tema-stil for resultat-seksjonen i mørk modus.
+ */
+
+.resultSection.dark {
+  border: 1px solid #333333;
+  background-color: #1a1a1a;
+  color: #ededed;
+}
+
+/*
+ * Tema-stil for resultat-seksjonen i lyst modus.
+ */
+
+.resultSection.light {
+  border: 1px solid #d5d5d5;
+  background-color: #ffffff;
+  color: #1a1a1a;
+}
+
+/*
+ * Basis-klasse for sekundær overskrifter (h2).
+ * Nullstiller standard topp-margin som kan forstyrre layout.
+ */
+
+.heading2 {
+  margin-top: 0;
+}
+
+/*
+ * Tekstfarge for h2-overskrifter i mørk modus.
+ */
+
+.heading2.dark {
+  color: #ededed;
+}
+
+/*
+ * Tekstfarge for h2-overskrifter i lyst modus.
+ */
+
+.heading2.light {
+  color: #000000;
+}
+
+/*
+ * Variasjon av heading2 som legger til økt topp-margin.
+ * Brukes for å separere større seksjoner visuelt.
+ */
+
+.heading2Large {
+  margin-top: 18px;
+}
+
+/*
+ * Basis-klasse for tertiær overskrifter (h3).
+ */
+
+.heading3 {
+  margin-top: 0;
+}
+
+/*
+ * Tekstfarge for h3-overskrifter i mørk modus.
+ */
+
+.heading3.dark {
+  color: #ededed;
+}
+
+/*
+ * Tekstfarge for h3-overskrifter i lyst modus.
+ */
+
+.heading3.light {
+  color: #000000;
+}
+
+/*
+ * Basis-klasse for select-elementer.
+ * Setter bredde, padding og grunnleggende stil.
+ */
+
+.select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+/*
+ * Tema-stil for select i mørk modus.
+ */
+
+.select.dark {
+  background-color: #2a2a2a;
+  color: #ededed;
+  border: 1px solid #444444;
+}
+
+/*
+ * Tema-stil for select i lyst modus.
+ */
+
+.select.light {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #d5d5d5;
+}
+
+/*
+ * Basis-klasse for input-elementer (text inputs).
+ * Gir fullbredde med konsistent padding og avrunding.
+ */
+
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+/*
+ * Tema-stil for input i mørk modus.
+ */
+
+.input.dark {
+  background-color: #2a2a2a;
+  color: #ededed;
+  border: 1px solid #444444;
+}
+
+/*
+ * Tema-stil for input i lyst modus.
+ */
+
+.input.light {
+  background-color: #f5f5f5;
+  color: #000000;
+  border: 1px solid #d5d5d5;
+}
+
+/*
+ * Tilleggsspacing for input-elementer som krever vertikalt mellomrom.
+ */
+
+.inputMargin {
+  margin-top: 6px;
+}
+
+/*
+ * Basis-klasse for textarea-elementer.
+ * Muliggjør vertikal endring av størrelse for større tekstinndata.
+ */
+
+.textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+/*
+ * Tema-stil for textarea i mørk modus.
+ */
+
+.textarea.dark {
+  background-color: #2a2a2a;
+  color: #ededed;
+  border: 1px solid #444444;
+}
+
+/*
+ * Tema-stil for textarea i lyst modus.
+ */
+
+.textarea.light {
+  background-color: #f5f5f5;
+  color: #000000;
+  border: 1px solid #d5d5d5;
+}
+
+/*
+ * Kontainer for scene-bilde og relaterte kontroller.
+ * Gir vertikalt mellomrom fra tidligere elementer.
+ */
+
+.sceneContainer {
+  margin-top: 12px;
+}
+
+/*
+ * Etikett som vises over scene-bildet.
+ * Liten tekst med redusert opacity for visuell hierarki.
+ */
+
+.sceneLabel {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/*
+ * Lastingindikatorkontainer som vises mens scene genereres eller lastes.
+ * Bruker stiplet kant for å indikere prosessering.
+ */
+
+.sceneBusyLoader {
+  padding: 12px;
+  border: 1px dashed #aaa;
+  border-radius: 8px;
+}
+
+/*
+ * Scene-bildetekstarkitektur.
+ * Begrenset maksimal høyde for å holde layout kompakt.
+ */
+
+.sceneImage {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/*
+ * Reservert plassarkitektur når ingen scene er tilgjengelig ennå.
+ * Viser bruker at bildet skal lastes her.
+ */
+
+.sceneEmpty {
+  padding: 12px;
+  border: 1px dashed #aaa;
+  border-radius: 8px;
+}
+
+/*
+ * Basis-klasse for standardknapper.
+ * Strekker seg til fullbredde med konsistent padding.
+ */
+
+.button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+}
+
+/*
+ * Kompakt knappestil for begrenset plass.
+ * Brukes typisk for filutlasting eller sekundær handling.
+ */
+
+.buttonCompact {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  color: #ffffff;
+}
+
+/*
+ * Mørkemodus-fargesetting for kompakt knapp.
+ * Bruker en blå farge som fungerer bra mot mørk bakgrunn.
+ */
+
+.buttonCompactDark {
+  background-color: #3b82f6;
+}
+
+/*
+ * Hover-tilstand for kompakt knapp i mørk modus.
+ * Mørkere blå og økt skygge for visuell tilbakemelding.
+ */
+
+.buttonCompactDarkHover {
+  background-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/*
+ * Lysemodus-fargesetting for kompakt knapp.
+ * Bruker en dypere blå farge for kontrast mot lys bakgrunn.
+ */
+
+.buttonCompactLight {
+  background-color: #0066cc;
+}
+
+/*
+ * Hover-tilstand for kompakt knapp i lyst modus.
+ * Enda mørkere blå og økt skygge for interaktiv tilbakemelding.
+ */
+
+.buttonCompactLightHover {
+  background-color: #0052a3;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/*
+ * Label-kontainer for filinndata.
+ * Brukes til å skjule skjult filinndata bak en visuell knapp.
+ */
+
+.fileLabel {
+  cursor: pointer;
+}
+
+/*
+ * Skjult filinndata-element.
+ * Blir trigget av en visuell knapp via JavaScript.
+ */
+
+.fileInput {
+  display: none;
+}
+
+/*
+ * Kontainer som viser liste over opplastede filer.
+ * Fleksibel layout med scroll når det er mange filer.
+ */
+
+.fileListContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-radius: 6px;
+  font-size: 11px;
+  overflow-y: auto;
+  padding: 4px 6px;
+}
+
+/*
+ * Tema-stil for filkontainer i mørk modus.
+ */
+
+.fileListContainer.dark {
+  background-color: #2a2a2a;
+  border: 1px solid #444444;
+  color: #999999;
+}
+
+/*
+ * Tema-stil for filkontainer i lyst modus.
+ */
+
+.fileListContainer.light {
+  background-color: #f5f5f5;
+  border: 1px solid #d5d5d5;
+  color: #999999;
+}
+
+/*
+ * Tilstand for tom filkontainer.
+ * Viser plassholder-melding når ingen filer er valgt.
+ */
+
+.fileListContainer.empty {
+  min-height: 28px;
+  padding-top: 0;
+  padding-bottom: 0;
+  justify-content: center;
+}
+
+/*
+ * Tilstand for fylt filkontainer.
+ * Bruker scroll og mer plass når filer er opplastet.
+ */
+
+.fileListContainer.filled {
+  min-height: auto;
+  max-height: 150px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  justify-content: flex-start;
+}
+
+/*
+ * Individuell filnavn-visningsarkitektur innenfor filkontainer.
+ * Avkorter lange filnavn med ellipsis.
+ */
+
+.fileItem {
+  width: 100%;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * Tekstfarge for filobjekter i mørk modus.
+ */
+
+.fileItem.dark {
+  color: #ededed;
+}
+
+/*
+ * Tekstfarge for filobjekter i lyst modus.
+ */
+
+.fileItem.light {
+  color: #000000;
+}
+
+/*
+ * Basis layout for produkt-kontroller.
+ * Brukes ikke aktivt men bevares for fremtidig bruk.
+ */
+
+.productControls {
+  display: flex;
+  gap: 8;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+/*
+ * Kontainer for liste over valgte produkter.
+ * Begrenset maksimal bredde for boksig presentasjon.
+ */
+
+.productList {
+  width: 100%;
+  max-width: 320px;
+  overflow: visible;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+/*
+ * Tema-stil for produktliste i mørk modus.
+ */
+
+.productList.dark {
+  border: 1px solid #444444;
+}
+
+/*
+ * Tema-stil for produktliste i lyst modus.
+ */
+
+.productList.light {
+  border: 1px solid #d5d5d5;
+}
+
+/*
+ * Grid-layout for produktkort innenfor produktlisten.
+ * Enkelt kolonne med jamnl avstand.
+ */
+
+.productGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 8px;
+}
+
+/*
+ * Individuelt produktkort som inneholder produktinformasjon og bilde.
+ * Liten hvit grense og rundinger for visuell separasjon.
+ */
+
+.productCard {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 8px;
+}
+
+/*
+ * Headerarkitektur innenfor produktkort.
+ * Fleksibel layout som plasserer navn på venstre og knapper på høyre.
+ */
+
+.productCardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+/*
+ * Produktnavn eller etikett-visning innenfor kortheader.
+ * Avkorter lange navn med ellipsis for kompakt presentasjon.
+ */
+
+.productCardLabel {
+  font-size: 12px;
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * Knappegruppering for produktkort-kontroller (flytt opp/ned, fjern).
+ * Kompakt horisontal layout.
+ */
+
+.productCardButtonGroup {
+  display: flex;
+  gap: 6px;
+}
+
+/*
+ * Produktbildearkitektur innenfor kort.
+ * Fleksibel høyde med konsistent grensing og avrunding.
+ */
+
+.productImage {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  border-radius: 8px;
+  margin-top: 6px;
+}
+
+/*
+ * Plassholder-visning når produktbildet ikke er tilgjengelig.
+ * Redusert opacity indikerer tomt/utilgjengelig tilstand.
+ */
+
+.productNoHref {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/*
+ * Kontainer for variasjonsvalg-kontroller.
+ * Inneholder antall-velger og generer-knapp.
+ */
+ 
+.variantsContainer {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/*
+ * Etikett for variasjons-antalløst-input.
+ */
+
+.variantsLabel {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/*
+ * Grid-layout for visning av genererte bildevarianter.
+ * Firekolonne layout som tillater sidebyside-sammenligning.
+ */
+
+.variantsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+/*
+ * Basis-klasse for variasjons-knappearkitektur.
+ * Muliggjør klikk på miniaturebilleder for å velge variant.
+ */
+
+.variantButton {
+  border-radius: 8px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+/*
+ * Aktivtilstand for variantknapp.
+ * Tykk sort grense indikerer valgt variant.
+ */
+
+.variantButtonActive {
+  border: 2px solid #000;
+}
+
+/*
+ * Inaktiv tilstand for variantknapp.
+ * Tynn grå grense for ikke-valgte varianter.
+ */
+
+.variantButtonInactive {
+  border: 1px solid #ddd;
+}
+
+/*
+ * Miniaturebilde innenfor variantknapp.
+ */
+
+.variantImage {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+
+/*
+ * Hovedbildearkitektur for valgt resultatvariant.
+ * Viser i fullbredde med konsistent avrunding og grense.
+ */
+
+.resultImage {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/*
+ * Reservert plassarkitektur når ingen resultater er tilgjengelige ennå.
+ * Bruker stiplet grense for å vise venter-tilstand.
+ */
+
+.noResults {
+  padding: 16px;
+  border: 1px dashed #aaa;
+  border-radius: 8px;
+}
+
+/*
+ * Feilmelding-presentasjonsarkitektur.
+ * Bruker rosa bakgrunn og svart tekst for tydelig feilindikering.
+ */
+
+.errorMessage {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #f3b;
+  background: #ffeaf2;
+  color: #000000;
+}
+
+/*
+ * Basis-klasse for deskriptiv eller støttende tekst.
+ * Vanligvis under overskrifter for å forklare input.
+ */
+.descriptionText {
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+/**
+ * Tema-stil for deskriptiv tekst i mørk modus.
+ * Bruker mørkere grå farge for subtil kontrast.
+ */
+.descriptionText.dark {
+  color: #999999;
+}
+
+/**
+ * Tema-stil for deskriptiv tekst i lyst modus.
+ * Bruker middels grå farge for lesbarhet.
+ */
+.descriptionText.light {
+  color: #666666;
+}
+
+/*
+ * Fleksibel kontainer-klasse.
+ * Brukes for horisontale layouter med mellomrom mellom elementer.
+ */
+.flexContainer {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/*
+ * Variasjonsklasse for flex-kontainer.
+ * Justerer elementer til toppen og bruker mindre mellomrom.
+ */
+.flexContainerStart {
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/*
+ * Utility-klasse for flex-barn elementer.
+ * Tillater elementet å vokse og fylle tilgjengelig plass.
+ */
+.flex1 {
+  flex: 1;
+}
+
+/*
+ * Utility-klasse for justering.
+ * Skyver element til bunnen av flexkontainer.
+ */
+.flexEnd {
+  align-self: end;
+}

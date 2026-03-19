@@ -1,0 +1,331 @@
+/* Global Css */
+
+:root {
+  --primary: #1a1a1a;
+  --primary-light: #2a2a2a;
+  --accent: #0066cc;
+  --accent-hover: #0052a3;
+  --border: #d5d5d5;
+  --neutral-light: #e8e8e8;
+  --text-secondary: #666666;
+  --surface: #ffffff;
+  --surface-dark: #1f1f1f;
+  --border-color: #d5d5d5;
+  --bg-card: #ffffff;
+  --text-main: #1a1a1a;
+}
+
+[data-theme='dark'] {
+  --border-color: #333333;
+  --bg-card: #1a1a1a;
+  --text-main: #ededed;
+}
+
+.dark-mode {
+  --bg-input: #2a2a2a;
+  --text-input: #ededed;
+  --border-input: #444444;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f0f0f #ededed;
+    --foreground: #ededed;
+    --primary: #1a1a1a;
+    --primary-light: #2a2a2a;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --border: #333333;
+    --neutral-light: #1a1a1a;
+    --text-secondary: #999999;
+    --surface: #1a1a1a;
+    --surface-dark: #0f0f0f;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s ease;
+}
+
+main {
+  padding: 0;
+  margin: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+h1 {
+  display: none;
+}
+
+button {
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: var(--accent);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+button:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background-color: var(--neutral-light);
+  color: var(--foreground);
+  border: 2px solid var(--border);
+}
+
+button.secondary:hover:not(:disabled) {
+  background-color: var(--border);
+}
+
+button[title="↑"],
+button[title="↓"],
+button[title="⭐"],
+button[title="Fjern"] {
+  padding: 6px 8px;
+  font-size: 12px;
+  min-width: 32px;
+}
+
+input,
+select,
+textarea {
+  font-size: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--surface);
+  color: var(--foreground);
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+section {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  background-color: var(--surface);
+  transition: all 0.2s ease;
+}
+
+section:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+main > div {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  padding: 32px 28px;
+  align-items: start;
+}
+
+main > div > section:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 100%;
+}
+
+main > div > section:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+h2 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+h2:first-child {
+  margin: 0;
+}
+
+h3 {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 14px 0 10px 0;
+  color: var(--foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+img {
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+img:hover {
+  transform: scale(1.01);
+}
+
+.error-message {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid #dc2626;
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.loading {
+  padding: 24px;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+div[style*="marginTop: 12"] {
+  margin-top: 12px !important;
+}
+
+div[style*="display: \"grid\", gridTemplateColumns: \"repeat(2"],
+div[style*="gridTemplateColumns: \"repeat(2"] {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 12px !important;
+}
+
+div[style*="gridTemplateColumns: \"repeat(4"] {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+}
+
+button[style*="border: i === selectedVariant"] {
+  border-radius: 8px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+button[style*="border: i === selectedVariant"] img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+div[style*="display: \"flex\", gap: 8"] {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: stretch;
+}
+
+div[style*="display: \"flex\", gap: 8"] input {
+  flex: 1;
+}
+
+div[style*="display: \"flex\", gap: 8"] button {
+  white-space: nowrap;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label div {
+  font-size: 12px;
+  opacity: 0.8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+label select,
+label input {
+  margin-top: 0;
+}
+
+div[style*="fontSize: 12"] {
+  font-size: 12px !important;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+select {
+  color-scheme: light dark;
+}
+
+select option {
+  background-color: white;
+  color: black;
+}
+
+@media (prefers-color-scheme: dark) {
+  select option {
+    background-color: #2a2a2a;
+    color: #ededed;
+  }
+}

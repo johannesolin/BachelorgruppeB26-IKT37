@@ -1,0 +1,195 @@
+/* DashboardNav.module.css */
+
+
+/*
+ * Hovedkontainer som inneholder alt navigasjoninnhold.
+ * Setter maksimal bredde for senterett layout med auto-margin.
+ * Implementerer smooth overgang mellom lys og mørk tema.
+ * 
+ * Standard tilstand er lyst modus med lys grå bakgrunn.
+ * Tekst er mørkgrå for optimal kontrast mot lys bakgrunn.
+ */
+.mainContainer {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 4px 8px;
+  font-family: system-ui, sans-serif;
+  position: relative;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  
+  /* Lyst modus - standard tilstand */
+  background-color: #f8f8f8;
+  color: #1a1a1a;
+}
+
+/*
+ * Mørk modus tema-override.
+ * Når foreldre-elementet har klassen .darkMode, overstyr alle stilarkitektur.
+ * Bakgrunn blir nesten helt svart for minimal øyelys.
+ * Tekst blir lysegrå for optimal lesbarhet mot mørk bakgrunn.
+ * 
+ * Denne selektoren bruker nested-klassystem for å påvirke alle barn-elementer.
+ */
+
+.darkMode .mainContainer {
+  background-color: #0f0f0f;
+  color: #ededed;
+}
+
+/*
+ * Basis-klasse for hele navigasjonsbaren.
+ * Reservert for eventuelle spesifikke konfigurasjoner.
+ * Strekker seg til fullbredde av foreldrekontainer.
+ */
+
+.dashboardNav {
+  width: 100%;
+}
+
+/*
+ * Primær navigasjonsbarkontainer.
+ * Implementerer fleksibel layout med horisontalt mellomrom mellom elementer.
+ * Legger til skygge under navbaren for dybdeperspektiv.
+ * Mellomrom (gap) er satt til 32 for god visuell separasjon av seksjoner.
+ * 
+ * Implementerer smooth fargovergang for tema-bytte.
+ */
+
+.navContainer {
+  width: 100%;
+  padding: 6px 20px;
+  display: flex;
+  gap: 32;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+/*
+ * Mørk bakgrundsfargeklasse for elementer som trenger mørkere utseende.
+ * Brukes for å lage kontrast mot lysere elementer.
+ */
+
+.bgDark { 
+  background-color: #1a1a1a; 
+}
+
+/*
+ * Svart bakgrundsfargeklasse for maksimal kontrast.
+ * Brukes for elementer som krever høyeste nivå av visuell separasjon.
+ */
+
+.bgBlack { 
+  background-color: #000000; 
+}
+
+/*
+ * Basis-klasse for både venstre og høyre seksjoner av navigasjonen.
+ * Bruker fleksibel layout for responsiv presentasjon.
+ * Sentraliserer alle barn-elementer vertikalt.
+ */
+
+.leftSection, .rightSection {
+  display: flex;
+  align-items: center;
+}
+
+/*
+ * Venstre seksjon av navigasjonen.
+ * Inneholder vanligvis logo og primære navigasjons-lenker.
+ * Større mellomrom (32px) for god visuell separasjon.
+ */
+
+.leftSection { 
+  gap: 32px; 
+}
+
+/*
+ * Høyre seksjon av navigasjonen.
+ * Inneholder vanligvis sekundære handlinger og brukerkontroller.
+ * Mindre mellomrom (12px) for kompakt presentasjon.
+ */
+
+.rightSection { 
+  gap: 12px; 
+}
+
+/*
+ * Primær navigasjonsknapp-stilarkitektur.
+ * Implementerer moderne flat design med transparent bakgrunn.
+ * Bruker hvit tekstfarge som fungerer godt over mørkere bakgrunner.
+ */
+
+.navButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+/*
+ * Sekundær knappestil.
+ * Basert på primær navButton men med mindre dimensjoner.
+ * Brukes for mindre eller mindre prioriterte handlinger.
+ */
+
+.secondaryButton {
+  composes: navButton; 
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  border-radius: 6px;
+}
+
+/*
+ * Hover-tilstand for både primær og sekundær knapper.
+ * Legger til halvgjennomsiktig hvit bakgrunn ved mouseover.
+ * Gir visuell tilbakemelding at element er interaktivt.
+ * Smooth transisjon for elegant brukerinteraksjon.
+ */
+
+.navButton:hover, .secondaryButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/*
+ * Standard ikonklasse.
+ * Setter ikon-størrelse til 18px for god synlighet i navigasjonsbaren.
+ * Brukes for primære ikon-elementer.
+ */
+
+.icon { 
+  font-size: 18px; 
+}
+
+/*
+ * Mindre ikonklasse.
+ * Setter ikon-størrelse til 16px for sekundære eller kompakte innstillinger.
+ * Brukes når små ikoner er mer passende for layout.
+ */
+
+.smallIcon { 
+  font-size: 16px; 
+}
+
+/*
+ * Logg-ut-seksjon-stilarkitektur.
+ * Gir større typografi for logoutknappen som visuell markering.
+ * Gjør logoutfunksjonen mer synlig og brukervennlig.
+ * Størrelse på 16px gjør at den skiller seg ut i navigasjonen.
+ */
+.Logg-ut {
+  font-size: 16px;
+}
