@@ -4,6 +4,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { DashboardNav } from "./navigation/DashboardNav";
 import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
+import { Product } from "@/types/dbTypes";
+import { SelectProductCard } from "@/components/SelectProductCard";
+import { templatesArray } from "@/templates/templastes";
 
 /*
  * Typedefinisjon for Template-objekter.
@@ -99,7 +102,7 @@ async function readErrorMessage(res: Response): Promise<string> {
 
 export default function Page() {
   // State for templates og valgt template
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templates, setTemplates] = useState<Template[]>(templatesArray as Template[]);
   const [templateId, setTemplateId] = useState<string>("");
 
   // State for scenebildet som skal brukes som bakgrunn
@@ -116,7 +119,7 @@ export default function Page() {
 
   // State for produktvalg
   const [productIdInput, setProductIdInput] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>(
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>(
     [],
   );
 
@@ -204,14 +207,14 @@ export default function Page() {
    * Setter automatisk første template som valgt hvis det finnes noen.
    */
 
-  useEffect(() => {
+  /*useEffect(() => {
     (async () => {
       const res = await fetch("/api/templates");
       const json = (await res.json()) as Template[];
       setTemplates(json);
       if (json.length) setTemplateId(json[0].id);
     })();
-  }, []);
+  }, []);*/
 
   /*
    * Laster scenebildet for en gitt template.
@@ -265,22 +268,19 @@ export default function Page() {
    * Effekt som trigger sceneinnlasting når templateId eller templates endres.
    */
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (!templateId) return;
     loadSceneForTemplate(templateId).catch((e) => setErr(toErrorMessage(e)));
-  }, [templateId, templates]);
+  }, [templateId, templates]);*/
 
   /*
    * Fjerner et produkt fra listen over valgte produkter.
    * Frigjør objektURL hvis det er en opplastet fil.
    */
 
-  function removeProduct(id: string) {
-    setSelectedProducts((prev) => {
-      const p = prev.find((x) => x.id === id);
-      if (p?.kind === "last-opp") URL.revokeObjectURL(p.previewUrl);
-      return prev.filter((x) => x.id !== id);
-    });
+  function removeProduct(id: number) {
+    const newArray = selectedProducts.filter(item => item.productId !== id);
+    setSelectedProducts(newArray);
   }
 
   /*
@@ -289,9 +289,9 @@ export default function Page() {
    * Validerer grensene slik at produktet ikke flyttes ut av listen.
    */
 
-  function moveProduct(id: string, dir: -1 | 1) {
+  function moveProduct(id: number, dir: -1 | 1) {
     setSelectedProducts((prev) => {
-      const idx = prev.findIndex((p) => p.id === id);
+      const idx = prev.findIndex((p) => p.productId === id);
       if (idx < 0) return prev;
       const nextIdx = idx + dir;
       if (nextIdx < 0 || nextIdx >= prev.length) return prev;
@@ -327,37 +327,26 @@ export default function Page() {
    */
 
   async function addProductId() {
-    try {
+    try{
       setErr("");
-      const pid = productIdInput.trim();
-      if (!pid) throw new Error("Skriv produktId");
+      const produktId = productIdInput.trim(); 
+      if(!produktId) throw new Error("Skriv produktId");
       if (selectedProducts.length >= 4) throw new Error("Maks 4 produkter");
 
       // Slå opp produkt via API
-      const res = await fetch(
-        `/api/products/by-id?productId=${encodeURIComponent(pid)}`,
-      );
-      const json = (await res.json()) as ProductLookupResponse;
-      if (!res.ok) throw new Error(json.error || "produkt henting feilet");
-      if (!json.found) throw new Error("Fant ikke produkt");
+      const response =  await fetch(`/api/products/by-id?productId=${encodeURIComponent(produktId)}`);      
+      const data = await response.json();
 
-      // Legg til produkt i liste
-      setSelectedProducts((prev) => [
-        ...prev,
-        {
-          kind: "produktId",
-          id: uuid(),
-          productId: pid,
-          name: json.product?.name,
-          bestHref: json.bestHref ?? undefined,
-        },
-      ]);
+      if (!response.ok) throw new Error(data.error || "produkt henting feilet");
 
-      // Tøm input-feltet etter vellykket tillegg
+      // legg til hentet produkt i produkt array
+      setSelectedProducts((prev) =>  [...prev, data])
+
+      // Tømming av inputfelt etter velykket henting av produkt
       setProductIdInput("");
-    } catch (e) {
+    } catch (e){
       setErr(toErrorMessage(e));
-    }
+    }    
   }
 
   /*
@@ -620,7 +609,7 @@ export default function Page() {
             >
               Skriv inn Produktnummer eller ProduktID
             </div>
-
+            {/* Valg av produkt */}
             <div className={styles.flexContainer}>
               <input
                 value={productIdInput}
@@ -637,7 +626,7 @@ export default function Page() {
                 Legg til
               </button>
             </div>
-
+            {/* input av fil */}
             <div
               className={`${styles.flexContainerStart} ${styles.flexContainer}`}
             >
@@ -709,73 +698,14 @@ export default function Page() {
                 />
               </label>
             </div>
-
+            {/** Visning av valgte produkter */}
             {selectedProducts.length > 0 && (
               <div
                 className={`${styles.productList} ${
                   darkMode ? styles.dark : styles.light
                 }`}
               >
-                <div className={styles.productGrid}>
-                  {selectedProducts.map((p, idx) => (
-                    <div key={p.id} className={styles.productCard}>
-                      <div className={styles.productCardHeader}>
-                        <div className={styles.productCardLabel}>
-                          {p.kind === "last-opp"
-                            ? idx === 0
-                              ? "Hovedbilde"
-                              : idx === 1
-                                ? "Sekundærbilde"
-                                : idx === 2
-                                  ? "Tredje-bilde"
-                                  : "Fjerde-bilde"
-                            : `${p.productId}${p.name ? ` – ${p.name}` : ""}`}
-                        </div>
-
-                        <div className={styles.productCardButtonGroup}>
-                          <button
-                            onClick={() => moveProduct(p.id, -1)}
-                            disabled={idx === 0}
-                            title="Flytt opp"
-                          >
-                            ↑
-                          </button>
-                          <button
-                            onClick={() => moveProduct(p.id, 1)}
-                            disabled={idx === selectedProducts.length - 1}
-                            title="Flytt ned"
-                          >
-                            ↓
-                          </button>
-                          <button
-                            onClick={() => removeProduct(p.id)}
-                            title="Fjern"
-                          >
-                            X
-                          </button>
-                        </div>
-                      </div>
-
-                      {p.kind === "last-opp" ? (
-                        <img
-                          src={p.previewUrl}
-                          alt="last-opp"
-                          className={styles.productImage}
-                        />
-                      ) : p.bestHref ? (
-                        <img
-                          src={p.bestHref}
-                          alt="dbx"
-                          className={styles.productImage}
-                        />
-                      ) : (
-                        <div className={styles.productNoHref}>
-                          Ingen bestHref
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <SelectProductCard selectedProducts={selectedProducts} moveProduct={moveProduct} removeProduct={removeProduct}/>            
               </div>
             )}
 
