@@ -540,7 +540,7 @@ export default function Page() {
                 </option>
               ))}
             </select>
-
+            <button>Generer Miljø</button>
             <div className={styles.sceneContainer}>
               <div className={styles.sceneLabel}>Miljøbilde</div>
               {busyScene ? (
