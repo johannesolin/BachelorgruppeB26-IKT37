@@ -1,6 +1,6 @@
 import 'server-only';
 import { executeQuery } from "./db";
-import { Product } from '@/types/dbTypes';
+import { Product } from '../types/dbTypes';
 
 
 export async function getProductById(q: string): Promise<Product[]>{

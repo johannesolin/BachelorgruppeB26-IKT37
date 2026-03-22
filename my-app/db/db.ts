@@ -1,6 +1,6 @@
 import 'server-only';
 import { DBSQLClient } from "@databricks/sql";
-import { SessionInfo } from "@/types/dbTypes";
+import { SessionInfo } from "../types/dbTypes";
 
 const sessionStore: {[key: string]: SessionInfo} = {};
 

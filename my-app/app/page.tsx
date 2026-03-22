@@ -1,5 +1,4 @@
 "use client";
-
 // Importering av React-hooks og komponenter som er nødvendige for siden
 import React, { useEffect, useMemo, useState } from "react";
 import { DashboardNav } from "./navigation/DashboardNav";
