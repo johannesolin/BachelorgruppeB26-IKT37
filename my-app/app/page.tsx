@@ -4,26 +4,17 @@ import React, { useEffect, useMemo, useState } from "react";
 import { DashboardNav } from "./navigation/DashboardNav";
 import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
-import { Product } from "@/types/dbTypes";
+import { Product } from "@/db/types";
 import { SelectProductCard } from "@/components/SelectProductCard";
-import { templatesArray } from "@/templates/templastes";
+import { templatesArray } from "@/templates/templates";
+import { Template } from "@/templates/types";
+import { EnvironmentCard } from "@/components/EnvironmentCard";
 
 /*
  * Typedefinisjon for Template-objekter.
  * En template kan enten være av type "hard" (med forhåndsdefinert bildefil)
  * eller type "soft" (generert basert på tekstlig prompt).
  */
-
-type Template =
-  | { id: string; name: string; type: "hard"; baseScene: { assetPath: string } }
-  | {
-      id: string;
-      name: string;
-      type: "soft";
-      scenePrompt: string;
-      size?: string;
-      quality?: string;
-    };
 
 /*
  * Typedefinisjon for SelectedProduct.
@@ -103,10 +94,12 @@ async function readErrorMessage(res: Response): Promise<string> {
 export default function Page() {
   // State for templates og valgt template
   const [templates, setTemplates] = useState<Template[]>(templatesArray as Template[]);
-  const [templateId, setTemplateId] = useState<string>("");
+  const [templateId, setTemplateId] = useState<string>(templates[0].id as string);
 
   // State for scenebildet som skal brukes som bakgrunn
   const [sceneUrl, setSceneUrl] = useState<string>("");
+  const [rawSceneUrl, setRawSceneUrl] = useState<string>("");
+  const [sceneTemplate, setSceneTemplate] = useState<Template | null>(null);
   const [sceneBlob, setSceneBlob] = useState<Blob | null>(null);
 
   // State for lastetilstander og feilmeldinger
@@ -153,16 +146,6 @@ export default function Page() {
   };
 
   /*
-   * Memoized valg av gjeldende template basert på templateId.
-   * Oppdateres kun når templates eller templateId endres.
-   */
-
-  const selectedTemplate = useMemo(
-    () => templates.find((t) => t.id === templateId) ?? null,
-    [templates, templateId],
-  );
-
-  /*
    * Hjelpefunksjon som setter scene fra en Blob.
    * Håndterer opprydding av tidligere objektURLer for å unngå minnelekk.
    */
@@ -180,14 +163,14 @@ export default function Page() {
    * Dette forhindrer minnelekkasje fra både scene og opplastede produkter.
    */
 
-  useEffect(() => {
+  /*useEffect(() => {
     return () => {
       if (sceneUrl) URL.revokeObjectURL(sceneUrl);
       selectedProducts.forEach((p) => {
         if (p.kind === "last-opp") URL.revokeObjectURL(p.previewUrl);
       });
     };
-  }, []);
+  }, []);*/
 
   /*
    * Effekt som oppdaterer document-nivåets colorScheme basert på darkMode.
@@ -223,7 +206,49 @@ export default function Page() {
    * Tilbakestiller resultater ved lasting av ny scene.
    */
 
-  async function loadSceneForTemplate(tid: string) {
+  async function generateScene(){
+    setBusyScene(true);
+    const temp = templates.find(temp => temp.id === templateId) as Template;
+    const form = new FormData();      
+
+    form.append("size", String(temp.size));
+    form.append("prompt", String(temp.scenePrompt).trim());    
+    form.append("quality", String(temp.quality));
+
+    const respons = await fetch("/api/openAi/generateEnvironment", {
+      method: "POST",
+      body: form,
+    })
+
+    let data = await respons.json();
+    setRawSceneUrl(data);
+    data = "data:image/jpeg;base64," + data;
+    setSceneUrl(data);
+    setSceneTemplate(temp);
+    setBusyScene(false);
+  }
+
+  async function refineScene() {
+    setBusyScene(true);
+    const form = new FormData();
+    form.append("size", String(sceneTemplate?.size));
+    form.append("prompt", String(sceneFixPrompt).trim());    
+    form.append("quality", String(sceneTemplate?.quality));
+    form.append("rawScene", rawSceneUrl);
+
+    const respons = await fetch("/api/openAi/editEnvironment", {
+      method: "POST",
+      body: form,
+    })
+
+    let data = await respons.json();
+    setRawSceneUrl(data);
+    data = "data:image/jpeg;base64," + data;
+    setSceneUrl(data);
+    setBusyScene(false);
+  }
+
+  /*async function loadSceneForTemplate(tid: string) {
     const t = templates.find((x) => x.id === tid);
     if (!t) return;
 
@@ -262,16 +287,9 @@ export default function Page() {
     } finally {
       setBusyScene(false);
     }
-  }
+  }*/
 
-  /*
-   * Effekt som trigger sceneinnlasting når templateId eller templates endres.
-   */
-
-  /*useEffect(() => {
-    if (!templateId) return;
-    loadSceneForTemplate(templateId).catch((e) => setErr(toErrorMessage(e)));
-  }, [templateId, templates]);*/
+ 
 
   /*
    * Fjerner et produkt fra listen over valgte produkter.
@@ -379,27 +397,11 @@ export default function Page() {
   }
 
   /*
-   * Regenererer scenen for soft templates ved å kalle på API for å hente en helt ny scene.
-   * Brukes når bruker ønsker en annen variant av samme template-stil.
-   */
-
-  async function regenerateScene() {
-    try {
-      if (!selectedTemplate) throw new Error("Ingen template valgt");
-      if (selectedTemplate.type !== "soft")
-        throw new Error("Regenerering gjelder kun soft templates");
-      await loadSceneForTemplate(templateId);
-    } catch (e) {
-      setErr(toErrorMessage(e));
-    }
-  }
-
-  /*
    * Finjusterer en eksisterende scene basert på brukerens tekstuelle instruksjon.
    * Sender scenebildet og instruksjonen til API som modifiserer bildet accordingly.
    */
 
-  async function refineScene() {
+  /*async function refineScene() {
     try {
       setErr("");
       if (!sceneBlob) throw new Error("Ingen scene å endre");
@@ -435,7 +437,7 @@ export default function Page() {
     } finally {
       setBusyScene(false);
     }
-  }
+  }*/
 
   /*
    * Genererer det endelige bildet med produkter plassert i scenen.
@@ -513,7 +515,6 @@ export default function Page() {
   return (
     <>
       <DashboardNav darkMode={darkMode} onDarkModeChange={setDarkMode} />
-
       <main className={styles.main}>
         <h1>Miljøbilde + produktplassering</h1>
 
@@ -523,83 +524,10 @@ export default function Page() {
               darkMode ? styles.dark : styles.light
             }`}
           >
-            <h2
-              className={`${styles.heading2} ${darkMode ? styles.dark : styles.light}`}
-            >
-              Velg miljø
-            </h2>
-
-            <select
-              value={templateId}
-              onChange={(e) => setTemplateId(e.target.value)}
-              className={`${styles.select} ${darkMode ? styles.dark : styles.light}`}
-            >
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} ({t.type})
-                </option>
-              ))}
-            </select>
-            <button>Generer Miljø</button>
-            <div className={styles.sceneContainer}>
-              <div className={styles.sceneLabel}>Miljøbilde</div>
-              {busyScene ? (
-                <div className={styles.sceneBusyLoader}>
-                  Laster/genererer...
-                </div>
-              ) : sceneUrl ? (
-                <>
-                  <img
-                    src={sceneUrl}
-                    alt="scene"
-                    className={styles.sceneImage}
-                  />
-
-                  {selectedTemplate?.type === "soft" && (
-                    <>
-                      <button
-                        onClick={regenerateScene}
-                        disabled={busyScene || busyGen}
-                        className={styles.button}
-                      >
-                        Regenerer scene
-                      </button>
-
-                      <div className={styles.sceneContainer}>
-                        <div className={styles.sceneLabel}>
-                          Hva vil du endre i scenen?
-                        </div>
-                        <input
-                          value={sceneFixPrompt}
-                          onChange={(e) => setSceneFixPrompt(e.target.value)}
-                          placeholder='F.eks: "Ta bort dusjen. Behold alt annet uendret."'
-                          className={`${styles.input} ${styles.inputMargin} ${
-                            darkMode ? styles.dark : styles.light
-                          }`}
-                        />
-                        <button
-                          onClick={refineScene}
-                          disabled={
-                            busyScene || busyGen || !sceneFixPrompt.trim()
-                          }
-                          className={styles.button}
-                        >
-                          Fiks scene
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </>
-              ) : (
-                <div className={styles.sceneEmpty}>Ingen scene</div>
-              )}
-            </div>
-
-            <h2
-              className={`${styles.heading2Large} ${styles.heading2} ${
-                darkMode ? styles.dark : styles.light
-              }`}
-            >
+            <EnvironmentCard templateId={templateId} setTemplateId={setTemplateId} templates={templates} generateScene={generateScene} 
+              darkMode={darkMode} sceneUrl={sceneUrl} busyScene={busyScene} busyGen={busyGen} sceneFixPrompt={sceneFixPrompt} setSceneFixPrompt={setSceneFixPrompt} 
+              refineScene={refineScene}/>
+            <h2>
               Velg 1–4 produkter
             </h2>
             <div

@@ -1,6 +1,6 @@
-import { Product } from "@/types/dbTypes";
+import { Product } from "@/db/types";
 import styles from "../app/page.module.css";
-import { SelectProductCardProps } from "@/types/componentTypes";
+import { SelectProductCardProps } from "@/components/types";
 
 export const SelectProductCard = (props : SelectProductCardProps) => {
     return (

@@ -1,4 +1,4 @@
-import { Template } from "@/types/templateTypes"
+import { Template } from "@/templates/types"
 
 export const templatesArray: Template[] = [
 {

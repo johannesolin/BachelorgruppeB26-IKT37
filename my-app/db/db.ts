@@ -1,6 +1,6 @@
 import 'server-only';
 import { DBSQLClient } from "@databricks/sql";
-import { SessionInfo } from "../types/dbTypes";
+import { SessionInfo } from "./types";
 
 const sessionStore: {[key: string]: SessionInfo} = {};
 
@@ -57,8 +57,8 @@ export async function executeQuery(query: string, q: string) {
         });
         const result = await operation.fetchAll();
         return result;
-    } catch (error){
-        console.log("Could not execute query", error);
+    } catch (e){
+        console.error("Could not execute query", e);
     }
 }
 
