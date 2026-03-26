@@ -98,7 +98,6 @@ export default function Page() {
 
   // State for scenebildet som skal brukes som bakgrunn
   const [sceneUrl, setSceneUrl] = useState<string>("");
-  const [rawSceneUrl, setRawSceneUrl] = useState<string>("");
   const [sceneTemplate, setSceneTemplate] = useState<Template | null>(null);
   const [sceneBlob, setSceneBlob] = useState<Blob | null>(null);
 
@@ -220,9 +219,7 @@ export default function Page() {
       body: form,
     })
 
-    let data = await respons.json();
-    setRawSceneUrl(data);
-    data = "data:image/jpeg;base64," + data;
+    const data = await respons.json();    
     setSceneUrl(data);
     setSceneTemplate(temp);
     setBusyScene(false);
@@ -234,16 +231,14 @@ export default function Page() {
     form.append("size", String(sceneTemplate?.size));
     form.append("prompt", String(sceneFixPrompt).trim());    
     form.append("quality", String(sceneTemplate?.quality));
-    form.append("rawScene", rawSceneUrl);
+    form.append("scene", sceneUrl);
 
     const respons = await fetch("/api/openAi/editEnvironment", {
       method: "POST",
       body: form,
     })
 
-    let data = await respons.json();
-    setRawSceneUrl(data);
-    data = "data:image/jpeg;base64," + data;
+    const data = await respons.json();    
     setSceneUrl(data);
     setBusyScene(false);
   }

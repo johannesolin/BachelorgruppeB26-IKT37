@@ -17,12 +17,12 @@ import { NextResponse } from "next/server";
             quality: quality,
         }
 
-        const result = await generateImg(props)
+        const result = await generateImg(props);
         if(!result || result.length === 0){
             return NextResponse.json({ error: "No return image" }, { status: 204 });
         }      
         
-        return NextResponse.json(result)
+        return NextResponse.json(result);
 
     } catch (e){
         console.error(e);

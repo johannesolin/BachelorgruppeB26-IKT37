@@ -8,3 +8,7 @@ export interface GenerateImg {
     size?: Size;
     quality?: Quality;   
 }
+
+export interface EditImg extends GenerateImg {
+    images: Buffer;
+}
