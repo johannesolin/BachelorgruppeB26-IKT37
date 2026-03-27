@@ -12,6 +12,7 @@ export interface Product {
     name: string;
     categoryName: string;
     images: ProductImage[];
+    selectedImage: number; 
 }
 
 export type SessionInfo = {

@@ -20,7 +20,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
                 </option>
               ))}
             </select>
-            <button onClick={props.generateScene}>{props.sceneUrl === "" ? "Generer Miljø" : "Regenerer Miljø" }</button>
+            <button onClick={props.generateScene} disabled={props.busyScene || props.busyGen}>{props.sceneUrl === "" ? "Generer Miljø" : "Regenerer Miljø" }</button>
             <div className={styles.sceneContainer}>
               <div className={styles.sceneLabel}>Miljøbilde</div>
               {props.busyScene ? (

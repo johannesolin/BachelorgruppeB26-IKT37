@@ -12,14 +12,14 @@ export async function POST( req: Request) {
         const quality = String(form.get("quality") ?? "").trim() as Quality;
         const scene = String(form.get("scene") ?? "").trim();
 
-        const buffer = base64ToBuffer(scene);
+        const sceneBuffer = base64ToBuffer(scene);
 
         const props: EditImg = {
         prompt: prompt,
         n: 1,
         size: size,
         quality: quality,
-        images: buffer,        
+        scene: sceneBuffer,       
         }
         
         const result = await editImg(props);

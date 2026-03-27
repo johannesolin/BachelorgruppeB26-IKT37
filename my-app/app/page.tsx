@@ -111,9 +111,7 @@ export default function Page() {
 
   // State for produktvalg
   const [productIdInput, setProductIdInput] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState<Product[]>(
-    [],
-  );
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
 
   // State for plasseringsinstruksjoner
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
@@ -238,10 +236,32 @@ export default function Page() {
       body: form,
     })
 
-    const data = await respons.json();    
-    setSceneUrl(data);
+    const data = await respons.json();
+    if(data.length > 0) setSceneUrl(data);
     setBusyScene(false);
   }
+
+  async function placeProductsInScene() {
+    setBusyGen(true);
+    const form = new FormData();
+    form.append("placment", String(placementPrompt).trim());
+    form.append("variants", String(variants));
+    form.append("scene", sceneUrl);
+    form.append("productCount", String(selectedProducts.length));
+    for(let i = 0; i < selectedProducts.length; i++){
+        form.append(`product${i}`, selectedProducts[i].images[selectedProducts[i].selectedImage].href);
+    }
+
+    const respons = await fetch("", {
+      method: "POST",
+      body: form,
+    })
+
+    const data = await respons.json();
+    if(data.length > 0) setResultDataUrls(data);
+    setBusyGen(false);    
+  }
+
 
   /*async function loadSceneForTemplate(tid: string) {
     const t = templates.find((x) => x.id === tid);
