@@ -1,0 +1,8 @@
+{
+  "id": "kjøkken_hard_v1",
+  "name": "Kjøkken",
+  "type": "hard",
+  "baseScene": {
+    "assetPath": "templates/assets/noytralt_kjøkken.png"
+  }
+}

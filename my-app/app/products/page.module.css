@@ -1,0 +1,345 @@
+ /* page.module.css */
+
+ 
+.main {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 4px 8px;
+  font-family: system-ui, sans-serif;
+  position: relative;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: calc(100vh - 60px);
+}
+
+/*
+ * Tema-stil for hovedkontainer i mørk modus.
+ */
+
+.main.darkMode {
+  background-color: #0f0f0f;
+  color: #ededed;
+}
+
+/*
+ * Tema-stil for hovedkontainer i lyst modus.
+ */
+
+.main.lightMode {
+  background-color: #f8f8f8;
+  color: #1a1a1a;
+}
+
+/*
+ * Wrapper som legger til vertikal avstand mellom seksjoner.
+ * Bruker flex-direction: column for en ryddig vertikal flyt.
+ */
+
+.containerWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px 0;
+}
+
+/*
+ * Basis-klasse for seksjoner (Søk og Produktdetaljer).
+ * Gir konsistent padding og avrunding av hjørner.
+ */
+
+.section {
+  border-radius: 12px;
+  padding: 24px;
+}
+
+/*
+ * Tema-stil for seksjoner i mørk modus.
+ */
+
+.section.darkMode {
+  border: 1px solid #444444;
+  background-color: #1a1a1a;
+}
+
+/*
+ * Tema-stil for seksjoner i lyst modus.
+ */
+
+.section.lightMode {
+  border: 1px solid #d5d5d5;
+  background-color: #ffffff;
+}
+
+/*
+ * Overskriftarkitektur for seksjoner.
+ */
+
+.sectionTitle {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+/*
+ * Tekstfarge for seksjonstittel i mørk modus.
+ */
+
+.sectionTitle.darkMode {
+  color: #ffffff;
+}
+
+/*
+ * Tekstfarge for seksjonstittel i lyst modus.
+ */
+
+.sectionTitle.lightMode {
+  color: #1a1a1a;
+}
+
+/*
+ * Spesifikk styling for søkeseksjonen.
+ */
+
+.searchSection {
+  margin-bottom: 0;
+}
+
+/*
+ * Form-layout for søkefelt og knapp.
+ * Bruker gap for konsistent avstand mellom input og knapp.
+ */
+
+.searchForm {
+  display: flex;
+  gap: 8px;
+}
+
+/*
+ * Basis-klasse for søke-input.
+ * Bruker flex: 1 for å fylle tilgjengelig plass i formen.
+ */
+
+.searchInput {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid;
+}
+
+/*
+ * Tema-stil for søke-input i mørk modus.
+ */
+
+.searchInput.darkMode {
+  border-color: #444444;
+  background-color: #2a2a2a;
+  color: #ededed;
+}
+
+/*
+ * Tema-stil for søke-input i lyst modus.
+ */
+
+.searchInput.lightMode {
+  border-color: #d5d5d5;
+  background-color: #f5f5f5;
+  color: #000000;
+}
+
+/*
+ * Basis-klasse for søkeknappen.
+ */
+
+.searchButton {
+  padding: 10px 20px;
+  color: #fff;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/*
+ * Fargesetting for søkeknapp i mørk modus.
+ */
+
+.searchButton.darkMode {
+  background-color: #3b82f6;
+}
+
+/*
+ * Fargesetting for søkeknapp i lyst modus.
+ */
+
+.searchButton.lightMode {
+  background-color: #0066cc;
+}
+
+/*
+ * Tilstand for deaktivert knapp (når API-kall pågår).
+ */
+
+.searchButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/*
+ * Feilmelding-presentasjonsarkitektur.
+ * Vises typisk ved tomme søk eller nettverksfeil.
+ */
+
+.errorMessage {
+  margin-top: 16px;
+  color: red;
+}
+
+/*
+ * Seksjon for visning av produktdetaljer.
+ */
+
+.productDetailsSection {
+  margin-bottom: 0;
+}
+
+/*
+ * Spesifikk overskriftstil for produktdetaljer.
+ */
+
+.productDetailsTitle {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+/*
+ * Tekstfarge for produktdetalj-tittel i mørk modus.
+ */
+
+.productDetailsTitle.darkMode {
+  color: #ffffff;
+}
+
+/*
+ * Tekstfarge for produktdetalj-tittel i lyst modus.
+ */
+
+.productDetailsTitle.lightMode {
+  color: #1a1a1a;
+}
+
+/*
+ * Grid-layout for produktvisning.
+ * Deler skjermen i to kolonner: info til venstre og bilde til høyre.
+ */
+
+.productGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+/*
+ * Venstre kolonne for tekstlig produktinformasjon.
+ */
+
+.productInfoColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/*
+ * Kontainer for et enkelt informasjonsfelt (Label + Verdi).
+ */
+
+.infoField {
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * Etikettarkitektur for produktfelt (f.eks. PRODUCTID).
+ */
+
+.infoLabel {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+}
+
+/*
+ * Stilarkitektur for selve informasjonsverdien.
+ */
+
+.infoValue {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 4px 0;
+}
+
+/*
+ * Høyre kolonne for produktbilde.
+ */
+
+.imageSection {
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * Etikett som vises over produktbildet.
+ */
+
+.imageLabel {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+/*
+ * Produktbildearkitektur.
+ * Begrenset maksimal bredde for å opprettholde balanse i grid-en.
+ */
+
+.productImage {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 8px;
+}
+
+/*
+ * Border-styling for bilde i mørk modus.
+ */
+
+.productImage.darkMode {
+  border: 1px solid #444444;
+}
+
+/*
+ * Border-styling for bilde i lyst modus.
+ */
+
+.productImage.lightMode {
+  border: 1px solid #eee;
+}
+
+/*
+ * Reservert plassarkitektur når produktbilde mangler.
+ */
+
+.noImagePlaceholder {
+  padding: 20px;
+  background: #f0f0f0;
+  color: #666;
+  border-radius: 8px;
+}
+
+/*
+ * Visuell indikator når ingen søk er utført ennå.
+ * Bruker stiplet grense for å indikere en tom tilstand.
+ */
+
+.emptyState {
+  text-align: center;
+  padding: 40px;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+}

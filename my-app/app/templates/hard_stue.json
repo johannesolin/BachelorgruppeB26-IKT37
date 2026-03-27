@@ -1,0 +1,8 @@
+{
+  "id": "stue_hard_v1",
+  "name": "Stue",
+  "type": "hard",
+  "baseScene": {
+    "assetPath": "templates/assets/noytral_stue.png"
+  }
+}

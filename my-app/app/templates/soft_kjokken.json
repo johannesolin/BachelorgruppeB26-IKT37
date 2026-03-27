@@ -1,0 +1,8 @@
+{
+  "id": "soft_kitchen_v1",
+  "name": "Kjøkken",
+  "type": "soft",
+  "scenePrompt": "Modern Scandinavian kitchen, clean composition, empty countertop area, soft daylight from left, photorealistic, realistic shadows.",
+  "size": "1536x1024",
+  "quality": "high"
+}

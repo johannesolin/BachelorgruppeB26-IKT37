@@ -1,0 +1,8 @@
+{
+  "id": "bathroom_hard_v1",
+  "name": "Baderom",
+  "type": "hard",
+  "baseScene": {
+    "assetPath": "/templates/noytralt_baderom_med_vaskeservant.png"
+  }
+}

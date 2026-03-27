@@ -1,0 +1,8 @@
+{
+  "id": "hage_hard_v1",
+  "name": "Hage",
+  "type": "hard",
+  "baseScene": {
+    "assetPath": "public/templates/noytral_hage.png"
+  }
+}

@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { DashboardNav } from "./navigation/DashboardNav";
 import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
+import { NextResponse } from "next/server";
 
 /*
  * Typedefinisjon for Template-objekter.
@@ -99,38 +100,79 @@ async function readErrorMessage(res: Response): Promise<string> {
  */
 
 export default function Page() {
-  // State for templates og valgt template
   const [templates, setTemplates] = useState<Template[]>([]);
   const [templateId, setTemplateId] = useState<string>("");
 
-  // State for scenebildet som skal brukes som bakgrunn
+  /*
+   * State for scenebildet som skal brukes som bakgrunn
+   */
+
   const [sceneUrl, setSceneUrl] = useState<string>("");
   const [sceneBlob, setSceneBlob] = useState<Blob | null>(null);
 
-  // State for lastetilstander og feilmeldinger
+  /*
+   * State for lastetilstander og feilmeldinger
+   */
+
   const [busyScene, setBusyScene] = useState(false);
   const [busyGen, setBusyGen] = useState(false);
   const [err, setErr] = useState<string>("");
 
-  // State for scenefiksing (scene refinement)
+  /*
+   * State for scenefiksing (scene refinement)
+   */
+
   const [sceneFixPrompt, setSceneFixPrompt] = useState("");
 
-  // State for produktvalg
+  /*
+   * State for produktvalg
+   */
+
   const [productIdInput, setProductIdInput] = useState("");
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>(
     [],
   );
 
-  // State for plasseringsinstruksjoner
+  /*
+   * State for plasseringsinstruksjoner
+   */
+
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
 
-  // State for generering av resultater
+  /*
+   * State for generering av resultater
+   */
+
   const [variants, setVariants] = useState<number>(4);
   const [resultDataUrls, setResultDataUrls] = useState<string[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<number>(0);
 
-  // State for mørkt/lyst tema
+  /*
+   * State for mørkt/lyst tema
+   */
   const [darkMode, setDarkModeState] = useState<boolean>(true);
+
+  /*
+   * Henter filene fra API-et vårt når siden laster
+   */
+
+  useEffect(() => {
+    async function fetchTemplates() {
+      try {
+        const res = await fetch("/api/templates");
+        const data = await res.json();
+        setTemplates(data);
+
+        // Velg den første filen automatisk
+        if (data.length > 0) {
+          setTemplateId(data[0].id);
+        }
+      } catch (e) {
+        setErr("Klarte ikke laste bilder fra templates-mappen");
+      }
+    }
+    fetchTemplates();
+  }, []);
 
   /*
    * Laster lagret tema fra localStorage ved komponentens montering.
@@ -221,46 +263,26 @@ export default function Page() {
    * Tilbakestiller resultater ved lasting av ny scene.
    */
 
-  async function loadSceneForTemplate(tid: string) {
-    const t = templates.find((x) => x.id === tid);
-    if (!t) return;
+const loadSceneForTemplate = async (tid: string) => {
+  // 1. Stopp hvis ID mangler helt
+  if (!tid) return;
 
-    // Nullstill tidligere resultater
-    setErr("");
-    setResultDataUrls([]);
-    setSelectedVariant(0);
-    setSceneBlob(null);
-    setSceneUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return "";
-    });
+  setBusyScene(true);
+  try {
+    const res = await fetch(`/api/template-image?templateId=${tid}`);
 
-    setBusyScene(true);
-    try {
-      if (t.type === "hard") {
-        // For hard templates: hent forhåndsdefinert bildefil fra API
-        const res = await fetch(
-          `/api/template-image?templateId=${encodeURIComponent(tid)}`,
-          { cache: "no-store" },
-        );
-        if (!res.ok) throw new Error(await readErrorMessage(res));
-        const blob = await res.blob();
-        setSceneFromBlob(blob);
-      } else {
-        // For soft templates: generer bilde basert på template-prompt
-        const res = await fetch("/api/scene", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ templateId: tid }),
-        });
-        if (!res.ok) throw new Error(await readErrorMessage(res));
-        const blob = await res.blob();
-        setSceneFromBlob(blob);
-      }
-    } finally {
-      setBusyScene(false);
-    }
+    // Hvis API-et sender et bilde (Blob), gjør dette:
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    setSceneUrl(url);
+    setSceneBlob(blob);
+  } catch (err) {
+    console.error("Feil ved lasting av bilde:", err);
+    setErr("Kunne ikke laste bakgrunnsbilde.");
+  } finally {
+    setBusyScene(false);
   }
+};
 
   /*
    * Effekt som trigger sceneinnlasting når templateId eller templates endres.
@@ -546,11 +568,16 @@ export default function Page() {
               onChange={(e) => setTemplateId(e.target.value)}
               className={`${styles.select} ${darkMode ? styles.dark : styles.light}`}
             >
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} ({t.type})
-                </option>
-              ))}
+              {/* Hvis listen er tom, vis en placeholder så boksen ikke kollapser */}
+              {templates.length === 0 ? (
+                <option value="">Laster maler...</option>
+              ) : (
+                templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} ({t.type})
+                  </option>
+                ))
+              )}
             </select>
 
             <div className={styles.sceneContainer}>
@@ -878,4 +905,3 @@ export default function Page() {
     </>
   );
 }
-
