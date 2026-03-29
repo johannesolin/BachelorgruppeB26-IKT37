@@ -20,3 +20,10 @@ export interface EnvironmentCardProps {
     setSceneFixPrompt: (param: string) => void;
     refineScene: () => void;
 }
+
+export interface ResultsCardProps {
+    darkMode: boolean;
+    resultDataUrls: string[];
+    selectedVariant: number;
+    setSelectedVariant: (param: number) => void; 
+}

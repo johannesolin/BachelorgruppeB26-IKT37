@@ -1,6 +1,6 @@
 import { base64ToBuffer } from "@/lib/base64ToBuffer";
 import { linkToBuffer } from "@/lib/linkToBuffer";
-import { addProductsToScene, editImg } from "@/openAi/client";
+import { addProductsToScene} from "@/openAi/client";
 import { AddProductsToScene} from "@/openAi/types";
 import { NextResponse } from "next/server";
 

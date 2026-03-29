@@ -9,6 +9,7 @@ import { SelectProductCard } from "@/components/SelectProductCard";
 import { templatesArray } from "@/templates/templates";
 import { Template } from "@/templates/types";
 import { EnvironmentCard } from "@/components/EnvironmentCard";
+import { ResultsCard } from "@/components/ResultsCard";
 
 /*
  * Typedefinisjon for Template-objekter.
@@ -98,7 +99,7 @@ export default function Page() {
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
 
   // State for generering av resultater
-  const [variants, setVariants] = useState<number>(4);
+  const [variants, setVariants] = useState<number>(1);
   const [resultDataUrls, setResultDataUrls] = useState<string[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<number>(0);
 
@@ -123,32 +124,6 @@ export default function Page() {
     saveTheme(isDark ? "dark" : "light");
   };
 
-  /*
-   * Hjelpefunksjon som setter scene fra en Blob.
-   * Håndterer opprydding av tidligere objektURLer for å unngå minnelekk.
-   */
-
-  function setSceneFromBlob(blob: Blob) {
-    setSceneBlob(blob);
-    setSceneUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(blob);
-    });
-  }
-
-  /*
-   * Cleanup-effekt som frigjør alle objektURLer når komponenten demonteres.
-   * Dette forhindrer minnelekkasje fra både scene og opplastede produkter.
-   */
-
-  /*useEffect(() => {
-    return () => {
-      if (sceneUrl) URL.revokeObjectURL(sceneUrl);
-      selectedProducts.forEach((p) => {
-        if (p.kind === "last-opp") URL.revokeObjectURL(p.previewUrl);
-      });
-    };
-  }, []);*/
 
   /*
    * Effekt som oppdaterer document-nivåets colorScheme basert på darkMode.
@@ -161,21 +136,7 @@ export default function Page() {
     } else {
       document.documentElement.style.colorScheme = "light";
     }
-  }, [darkMode]);
-
-  /*
-   * Henter tilgjengelige templates fra API ved komponentens montering.
-   * Setter automatisk første template som valgt hvis det finnes noen.
-   */
-
-  /*useEffect(() => {
-    (async () => {
-      const res = await fetch("/api/templates");
-      const json = (await res.json()) as Template[];
-      setTemplates(json);
-      if (json.length) setTemplateId(json[0].id);
-    })();
-  }, []);*/
+  }, [darkMode]);  
 
   /*
    * Laster scenebildet for en gitt template.
@@ -604,7 +565,6 @@ export default function Page() {
                   <option value={8}>8</option>
                 </select>
               </label>
-
               <button
                 onClick={placeProductsInScene}
                 disabled={busyGen || busyScene}
@@ -616,57 +576,7 @@ export default function Page() {
 
             {err && <div className={styles.errorMessage}>{err}</div>}
           </section>
-
-          <section
-            className={`${styles.resultSection} ${
-              darkMode ? styles.dark : styles.light
-            }`}
-          >
-            <h2
-              className={`${styles.heading2} ${darkMode ? styles.dark : styles.light}`}
-            >
-              Resultat
-            </h2>
-
-            {resultDataUrls.length === 0 ? (
-              <div className={styles.noResults}>Ingen resultat ennå</div>
-            ) : (
-              <>
-                <img
-                  src={resultDataUrls[0]}
-                  alt="selected-result"
-                  className={styles.resultImage}
-                />
-
-                <h3
-                  className={`${styles.heading3} ${
-                    darkMode ? styles.dark : styles.light
-                  }`}
-                >
-                  Velg beste variant
-                </h3>
-                <div className={styles.variantsGrid}>
-                  {resultDataUrls.map((u, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelectedVariant(i)}
-                      className={`${styles.variantButton} ${
-                        i === selectedVariant
-                          ? styles.variantButtonActive
-                          : styles.variantButtonInactive
-                      }`}
-                    >
-                      <img
-                        src={u}
-                        alt={`variant-${i}`}
-                        className={styles.variantImage}
-                      />
-                    </button>
-                  ))}
-                </div>                
-              </>
-            )}
-          </section>
+          <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>          
         </div>
       </main>
     </>
