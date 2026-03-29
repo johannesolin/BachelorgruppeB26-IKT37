@@ -1,7 +1,6 @@
 import "server-only";
 import { AzureOpenAI, toFile } from "openai";
 import { AddProductsToScene, EditImg, GenerateImg } from "./types";
-import fs from "fs/promises";
 
 let client: AzureOpenAI | null = null;
 
@@ -75,14 +74,14 @@ export async function editImg(props: EditImg): Promise<string>{
     return base64String;
 }
 
-export async function addProductsToScene(props: AddProductsToScene): Promise<string>{
+export async function addProductsToScene(props: AddProductsToScene): Promise<string[]>{
     const client: AzureOpenAI = getAzureOpenAiClient();    
     const scene = await toFile(props.scene.buffer, `scene.${props.scene.fileType.split("/")[1]}`, { type: props.scene.fileType });
     
     const products = await Promise.all(
             props.products.map((buffer, index) => toFile(buffer.buffer, `product_${index}.${buffer.fileType.split("/")[1]}`, { type: buffer.fileType})
-        ));
-
+        ));  
+    
     const img = await client.images.edit({
         image: [scene, ...products],
         size: props.size,
@@ -93,13 +92,14 @@ export async function addProductsToScene(props: AddProductsToScene): Promise<str
         input_fidelity: "high"
     });
 
-    let base64String = img.data?.[0].b64_json;
-
-    if(!base64String){
+    let base64StringArray = [""];
+    if(img.data){
+        base64StringArray = await Promise.all(
+        img.data.map((img) => "data:image/jpeg;base64," + img.b64_json)
+        )
+    } else {
         throw new Error("No image returned, data[0].b64_json missing");
     }
 
-    base64String = "data:image/jpeg;base64," + base64String;
-
-    return base64String;
+    return base64StringArray;
 }

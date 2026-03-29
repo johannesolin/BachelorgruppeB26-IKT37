@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@azure/openai": "^2.0.0",
+    "file-type": "^22.0.0",
     "next": "16.1.6",
     "openai": "^6.32.0",
     "react": "19.2.3",

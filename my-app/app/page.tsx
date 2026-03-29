@@ -32,25 +32,6 @@ type SelectedProduct =
     };
 
 /*
- * Typedefinisjon for respons fra generate-APIet.
- * Inneholder enten resulterende data-URLer eller en feilmelding.
- */
-
-type GenerateResponse = { resultDataUrls?: string[]; error?: string };
-
-/*
- * Typedefinisjon for respons fra produktoppslagings-APIet.
- * Inneholder produktinformasjon eller feilmelding.
- */
-
-type ProductLookupResponse = {
-  found?: boolean;
-  product?: { productId: string; name: string; categoryName?: string };
-  bestHref?: string | null;
-  error?: string;
-};
-
-/*
  * Hjelpefunksjon som konverterer en ukjent feil til en lesbar feilmelding.
  * Hvis feilen er en Error-instans, returneres dens melding, ellers konverteres den til string.
  */
@@ -244,67 +225,24 @@ export default function Page() {
   async function placeProductsInScene() {
     setBusyGen(true);
     const form = new FormData();
-    form.append("placment", String(placementPrompt).trim());
+    form.append("prompt", String(placementPrompt).trim());
     form.append("variants", String(variants));
     form.append("scene", sceneUrl);
-    form.append("productCount", String(selectedProducts.length));
+    form.append("productCount", String(selectedProducts.length));    
     for(let i = 0; i < selectedProducts.length; i++){
         form.append(`product${i}`, selectedProducts[i].images[selectedProducts[i].selectedImage].href);
     }
 
-    const respons = await fetch("", {
+    const respons = await fetch("/api/openAi/productInEnvironment", {
       method: "POST",
       body: form,
     })
 
     const data = await respons.json();
     if(data.length > 0) setResultDataUrls(data);
+    console.log(resultDataUrls);
     setBusyGen(false);    
-  }
-
-
-  /*async function loadSceneForTemplate(tid: string) {
-    const t = templates.find((x) => x.id === tid);
-    if (!t) return;
-
-    // Nullstill tidligere resultater
-    setErr("");
-    setResultDataUrls([]);
-    setSelectedVariant(0);
-    setSceneBlob(null);
-    setSceneUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return "";
-    });
-
-    setBusyScene(true);
-    try {
-      if (t.type === "hard") {
-        // For hard templates: hent forhåndsdefinert bildefil fra API
-        const res = await fetch(
-          `/api/template-image?templateId=${encodeURIComponent(tid)}`,
-          { cache: "no-store" },
-        );
-        if (!res.ok) throw new Error(await readErrorMessage(res));
-        const blob = await res.blob();
-        setSceneFromBlob(blob);
-      } else {
-        // For soft templates: generer bilde basert på template-prompt
-        const res = await fetch("/api/scene", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ templateId: tid }),
-        });
-        if (!res.ok) throw new Error(await readErrorMessage(res));
-        const blob = await res.blob();
-        setSceneFromBlob(blob);
-      }
-    } finally {
-      setBusyScene(false);
-    }
-  }*/
-
- 
+  } 
 
   /*
    * Fjerner et produkt fra listen over valgte produkter.
@@ -331,22 +269,6 @@ export default function Page() {
       const copy = [...prev];
       const [item] = copy.splice(idx, 1);
       copy.splice(nextIdx, 0, item);
-      return copy;
-    });
-  }
-
-  /*
-   * Setter et produkt som hovedprodukt ved å flytte det til første posisjon i listen.
-   * Hovedproduktet får spesiell behandling ved bildegenering.
-   */
-
-  function setMain(id: string) {
-    setSelectedProducts((prev) => {
-      const idx = prev.findIndex((p) => p.id === id);
-      if (idx <= 0) return prev;
-      const copy = [...prev];
-      const [item] = copy.splice(idx, 1);
-      copy.unshift(item);
       return copy;
     });
   }
@@ -463,7 +385,7 @@ export default function Page() {
    * Sender alle nødvendige data til API for bildegenering.
    */
 
-  async function generate() {
+  /*async function generate() {
     try {
       setErr("");
       setResultDataUrls([]);
@@ -520,7 +442,7 @@ export default function Page() {
     } finally {
       setBusyGen(false);
     }
-  }
+  }*/
 
   /*
    * Returnerer JSX for hele dashbord-siden.
@@ -684,7 +606,7 @@ export default function Page() {
               </label>
 
               <button
-                onClick={generate}
+                onClick={placeProductsInScene}
                 disabled={busyGen || busyScene}
                 className={`${styles.button} ${styles.flex1} ${styles.flexEnd}`}
               >
@@ -711,7 +633,7 @@ export default function Page() {
             ) : (
               <>
                 <img
-                  src={resultDataUrls[selectedVariant]}
+                  src={resultDataUrls[0]}
                   alt="selected-result"
                   className={styles.resultImage}
                 />
@@ -741,7 +663,7 @@ export default function Page() {
                       />
                     </button>
                   ))}
-                </div>
+                </div>                
               </>
             )}
           </section>

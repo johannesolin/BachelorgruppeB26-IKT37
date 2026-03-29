@@ -15,7 +15,6 @@ export async function GET( req: Request ){
         return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
     result[0].selectedImage = 0;
-    console.log(result)
     return NextResponse.json(result[0])
     } catch (e){
         console.error(e);
