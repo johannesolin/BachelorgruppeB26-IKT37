@@ -7,12 +7,22 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
         <h2
               className={`${styles.heading2} ${props.darkMode ? styles.dark : styles.light}`}
             >
-              Velg miljø
+              Velg miljø og modell
             </h2>
+            <select 
+              value={props.selectedModel} 
+              onChange={(e) => props.setSelectedModel(e.target.value)} 
+              className={`${styles.select} ${props.darkMode ? styles.dark : styles.light}`}
+              disabled={props.busyGen || props.busyScene}
+            >
+              <option value="gpt-image-1.5" key="gpt-image-1.5">GPT-Image-1.5</option>
+              <option value="flux-2-pro" key="flux-2-pro">FLUX-2-PRO</option>
+            </select>
             <select
               value={props.templateId}
               onChange={(e) => props.setTemplateId(e.target.value)}
               className={`${styles.select} ${props.darkMode ? styles.dark : styles.light}`}
+              disabled={props.busyGen || props.busyScene}
             >
               {props.templates.map((t) => (
                 <option key={t.id} value={t.id}>

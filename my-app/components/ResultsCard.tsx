@@ -20,7 +20,7 @@ export const ResultsCard = (props: ResultsCardProps) => {
             ) : (
               <>
                 <img
-                  src={props.resultDataUrls[0]}
+                  src={props.resultDataUrls[props.selectedVariant]}
                   alt="selected-result"
                   className={styles.resultImage}
                 />

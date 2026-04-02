@@ -1,6 +1,6 @@
 "use client";
 // Importering av React-hooks og komponenter som er nødvendige for siden
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardNav } from "./navigation/DashboardNav";
 import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
@@ -74,6 +74,10 @@ async function readErrorMessage(res: Response): Promise<string> {
  */
 
 export default function Page() {
+  // State for modell valg
+  const [selectedModel, setSelectedModel] = useState<string>("");
+
+
   // State for templates og valgt template
   const [templates, setTemplates] = useState<Template[]>(templatesArray as Template[]);
   const [templateId, setTemplateId] = useState<string>(templates[0].id as string);
@@ -154,10 +158,19 @@ export default function Page() {
     form.append("prompt", String(temp.scenePrompt).trim());    
     form.append("quality", String(temp.quality));
 
-    const respons = await fetch("/api/openAi/generateEnvironment", {
-      method: "POST",
-      body: form,
-    })
+    let respons;
+    
+    if(selectedModel === "gpt-image-1.5"){
+      respons = await fetch("/api/openAi/generateEnvironment", {
+        method: "POST",
+        body: form,
+      });
+    } else {
+      respons = await fetch("/api/flux2Pro/generateEnvironment", {
+        method: "POST",
+        body: form,
+      });
+    }
 
     const data = await respons.json();    
     setSceneUrl(data);
@@ -173,10 +186,18 @@ export default function Page() {
     form.append("quality", String(sceneTemplate?.quality));
     form.append("scene", sceneUrl);
 
-    const respons = await fetch("/api/openAi/editEnvironment", {
-      method: "POST",
-      body: form,
-    })
+    let respons;
+    if(selectedModel === "gpt-image-1.5"){
+      respons = await fetch("/api/openAi/editEnvironment", {
+        method: "POST",
+        body: form,
+      });
+    } else {
+      respons = await fetch("/api/flux2Pro/editEnvironment", {
+        method: "POST",
+        body: form,
+      });
+    }
 
     const data = await respons.json();
     if(data.length > 0) setSceneUrl(data);
@@ -194,14 +215,24 @@ export default function Page() {
         form.append(`product${i}`, selectedProducts[i].images[selectedProducts[i].selectedImage].href);
     }
 
-    const respons = await fetch("/api/openAi/productInEnvironment", {
-      method: "POST",
-      body: form,
-    })
+    let respons;
+    if(selectedModel === "gpt-image-1.5"){
+      respons = await fetch("/api/openAi/productInEnvironment", {
+        method: "POST",
+        body: form,
+      })
+    } else {
+      respons = await fetch("/api/flux2Pro/productInEnvironment", {
+        method: "POST",
+        body: form,
+      })
+    }
 
     const data = await respons.json();
-    if(data.length > 0) setResultDataUrls(data);
-    console.log(resultDataUrls);
+    if(data.length > 0){
+      setResultDataUrls(data);
+      setSelectedVariant(0);
+    }
     setBusyGen(false);    
   } 
 
@@ -294,48 +325,8 @@ export default function Page() {
     });
   }
 
-  /*
-   * Finjusterer en eksisterende scene basert på brukerens tekstuelle instruksjon.
-   * Sender scenebildet og instruksjonen til API som modifiserer bildet accordingly.
-   */
 
-  /*async function refineScene() {
-    try {
-      setErr("");
-      if (!sceneBlob) throw new Error("Ingen scene å endre");
-      if (!sceneFixPrompt.trim()) throw new Error("Skriv hva du vil endre");
 
-      setBusyScene(true);
-
-      // Opprett FormData med scene og instruksjon
-      const fd = new FormData();
-      fd.append("instruction", sceneFixPrompt.trim());
-      fd.append(
-        "scene",
-        new File([sceneBlob], "scene.png", {
-          type: sceneBlob.type || "image/png",
-        }),
-      );
-
-      // Send til API for scene-modifisering
-      const res = await fetch("/api/scene-refine", {
-        method: "POST",
-        body: fd,
-      });
-      if (!res.ok) throw new Error(await readErrorMessage(res));
-
-      // Sett den modifiserte scenen
-      const blob = await res.blob();
-      setSceneFromBlob(blob);
-
-      // Tøm instruksjonsfelt etter vellykket operasjon
-      setSceneFixPrompt("");
-    } catch (e) {
-      setErr(toErrorMessage(e));
-    } finally {
-      setBusyScene(false);
-    }
-  }*/
 
   /*
    * Genererer det endelige bildet med produkter plassert i scenen.
@@ -424,7 +415,7 @@ export default function Page() {
           >
             <EnvironmentCard templateId={templateId} setTemplateId={setTemplateId} templates={templates} generateScene={generateScene} 
               darkMode={darkMode} sceneUrl={sceneUrl} busyScene={busyScene} busyGen={busyGen} sceneFixPrompt={sceneFixPrompt} setSceneFixPrompt={setSceneFixPrompt} 
-              refineScene={refineScene}/>
+              refineScene={refineScene} selectedModel={selectedModel} setSelectedModel={setSelectedModel}/>
             <h2>
               Velg 1–4 produkter
             </h2>

@@ -19,6 +19,8 @@ export interface EnvironmentCardProps {
     sceneFixPrompt: string;
     setSceneFixPrompt: (param: string) => void;
     refineScene: () => void;
+    selectedModel: string;
+    setSelectedModel: ( param: string ) => void;
 }
 
 export interface ResultsCardProps {

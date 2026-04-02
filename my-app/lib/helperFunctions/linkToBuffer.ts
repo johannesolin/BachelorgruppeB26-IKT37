@@ -1,5 +1,5 @@
 import { fileTypeFromBuffer } from "file-type";
-import { BufferAndType } from "./types";
+import { BufferAndType } from "../types";
 
 
 export async function linkToBuffer( link: string ): Promise<BufferAndType> {

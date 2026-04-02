@@ -1,4 +1,4 @@
-import { BufferAndType } from "./types";
+import { BufferAndType } from "../types";
 
 export function base64ToBuffer(base64String: string): BufferAndType{
     const parts = base64String.split(";");

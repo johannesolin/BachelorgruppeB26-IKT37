@@ -65,9 +65,7 @@ export async function editImg(props: EditImg): Promise<string>{
 
     let base64String = img.data?.[0].b64_json;
 
-    if(!base64String){
-        throw new Error("No image returned, data[0].b64_json missing");
-    }
+    if(!base64String) throw new Error("No image returned, data[0].b64_json missing");
 
     base64String = "data:image/jpeg;base64," + base64String;
 

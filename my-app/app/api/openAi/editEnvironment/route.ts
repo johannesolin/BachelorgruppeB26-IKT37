@@ -1,4 +1,4 @@
-import { base64ToBuffer } from "@/lib/base64ToBuffer";
+import { base64ToBuffer } from "@/lib/helperFunctions/base64ToBuffer";
 import { editImg } from "@/openAi/client";
 import { EditImg, Quality, Size } from "@/openAi/types";
 import { NextResponse } from "next/server";
