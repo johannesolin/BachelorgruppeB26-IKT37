@@ -1,10 +1,13 @@
 import { Template } from "@/templates/types";
 import { Product } from "../db/types";
 
-export interface SelectProductCardProps {
+export interface ProductCardProps {
+    product: Product;
     selectedProducts: Product[];
+    index: number;
     moveProduct: (param: number, param2: -1 | 1 ) => void;
     removeProduct: (param: number) => void;
+    changeSelectedImage: (param: number, param2: number) => void;
 }
 
 export interface EnvironmentCardProps {

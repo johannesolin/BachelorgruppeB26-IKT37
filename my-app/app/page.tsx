@@ -10,6 +10,7 @@ import { templatesArray } from "@/templates/templates";
 import { Template } from "@/templates/types";
 import { EnvironmentCard } from "@/components/EnvironmentCard";
 import { ResultsCard } from "@/components/ResultsCard";
+import { ProductCard } from "@/components/ProductCard";
 
 /*
  * Typedefinisjon for Template-objekter.
@@ -76,7 +77,6 @@ async function readErrorMessage(res: Response): Promise<string> {
 export default function Page() {
   // State for modell valg
   const [selectedModel, setSelectedModel] = useState<string>("");
-
 
   // State for templates og valgt template
   const [templates, setTemplates] = useState<Template[]>(templatesArray as Template[]);
@@ -235,6 +235,10 @@ export default function Page() {
     }
     setBusyGen(false);    
   } 
+
+  function changeSelectedImage( productIndex: number, imageIndex: number ){
+    selectedProducts[productIndex].selectedImage = imageIndex;
+  }
 
   /*
    * Fjerner et produkt fra listen over valgte produkter.
@@ -522,7 +526,9 @@ export default function Page() {
                   darkMode ? styles.dark : styles.light
                 }`}
               >
-                <SelectProductCard selectedProducts={selectedProducts} moveProduct={moveProduct} removeProduct={removeProduct}/>            
+                {selectedProducts?.map((product, index) => (
+                  <ProductCard key={product.productId} product={product} moveProduct={moveProduct} removeProduct={removeProduct} index={index} selectedProducts={selectedProducts} changeSelectedImage={changeSelectedImage}/>
+                ))}                     
               </div>
             )}
 
