@@ -1,7 +1,13 @@
+import { PlacementPreset } from "@/templates/types";
 import styles from "../app/page.module.css";
 import { PlacementCardProps } from "./types";
 
 export function PlacementCard( props: PlacementCardProps ){
+  function changePlacementPreset( id: string ){
+     const temp = props.placementPresets.find(temp => temp.id === id) as PlacementPreset;
+     props.setSelectedPlacementPreset(id);
+     props.setPlacementPrompt(id === "" ? "" : temp.text);    
+  }
     return (
         <>
         <h2
@@ -11,6 +17,13 @@ export function PlacementCard( props: PlacementCardProps ){
             >
               ØNSKET PLASSERING PÅ PRODUKT(ENE)
             </h2>
+            <p>Velg evt. preset, rediger tekst, eller hent forslag automatisk.</p>
+            <select value={props.selectedPlacementPreset} onChange={e => changePlacementPreset(e.target.value)}>
+              <option value="">- Velg mal -</option>
+              {props.placementPresets?.map((placement) => (
+                <option key={placement.id} value={placement.id}>{placement.label}</option>
+              ))}
+            </select>
             <textarea
               value={props.placementPrompt}
               onChange={(e) => props.setPlacementPrompt(e.target.value)}
@@ -18,7 +31,7 @@ export function PlacementCard( props: PlacementCardProps ){
               placeholder="Eks: Plasser produktet i sentrum av bordet. Orienter det mot venstre. Produktet skal være lettsynlig og dominere komposisjonen."
               className={`${styles.textarea} ${props.darkMode ? styles.dark : styles.light}`}
             />
-
+            <button onClick={props.getPlacementSuggestion} disabled={props.busyGen || props.busyScene || props.busyPlacement || props.placementPrompt.length === 0}>{props.busyPlacement ? "Henter forslag fra språkmodell..." : "Få forslag fra språkmodell (GPT 5.4)"}</button>
             <div className={styles.variantsContainer}>
               <label className={styles.flex1}>
                 <div className={styles.variantsLabel}>Varianter</div>
@@ -36,7 +49,7 @@ export function PlacementCard( props: PlacementCardProps ){
               </label>
               <button
                 onClick={props.placeProductsInScene}
-                disabled={props.busyGen || props.busyScene || props.placementPrompt.length === 0}
+                disabled={props.busyGen || props.busyScene || props.busyPlacement || props.placementPrompt.length === 0}
                 className={`${styles.button} ${styles.flex1} ${styles.flexEnd}`}
               >
                 {props.busyGen ? "Genererer..." : "Generer"}

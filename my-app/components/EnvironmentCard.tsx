@@ -13,7 +13,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
               value={props.selectedModel} 
               onChange={(e) => props.setSelectedModel(e.target.value)} 
               className={`${styles.select} ${props.darkMode ? styles.dark : styles.light}`}
-              disabled={props.busyGen || props.busyScene}
+              disabled={props.busyGen}
             >
               <option value="" disabled selected hidden>Velg Modell</option>
               <option value="gpt-image-1.5" key="gpt-image-1.5">GPT-Image-1.5</option>
@@ -23,7 +23,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
               value={props.templateId}
               onChange={(e) => props.setTemplateId(e.target.value)}
               className={`${styles.select} ${props.darkMode ? styles.dark : styles.light}`}
-              disabled={props.busyGen || props.busyScene}
+              disabled={props.busyGen}
             >
               {props.templates.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -31,10 +31,10 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
                 </option>
               ))}
             </select>
-            <button onClick={props.generateScene} disabled={props.busyScene || props.busyGen || props.selectedModel === ""}>{props.sceneUrl === "" ? "Generer Miljø" : "Regenerer Miljø" }</button>
+            <button onClick={props.generateScene} disabled={props.busyGen || props.busyScene || props.busyPlacement || props.selectedModel === ""}>{props.busyScene ? "Genererer Miljø" : props.sceneUrl === "" ? "Generer Miljø" : "Regenerer Miljø" }</button>
             <div className={styles.sceneContainer}>
               <div className={styles.sceneLabel}>Miljøbilde</div>
-              {props.busyScene ? (
+              {props.busyGen ? (
                 <div className={styles.sceneBusyLoader}>
                   Laster/genererer...
                 </div>
@@ -59,9 +59,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
                     />
                     <button
                         onClick={props.refineScene}
-                        disabled={
-                        props.busyScene || props.busyGen || !props.sceneFixPrompt.trim()
-                        }
+                        disabled={props.busyGen || !props.sceneFixPrompt.trim()}
                         className={styles.button}
                     >
                         Fiks scene

@@ -6,12 +6,13 @@ import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
 import { Product } from "@/db/types";
 import { templatesArray } from "@/templates/templates";
-import { Template } from "@/templates/types";
+import { PlacementPreset, Template } from "@/templates/types";
 import { EnvironmentCard } from "@/components/EnvironmentCard";
 import { ResultsCard } from "@/components/ResultsCard";
 import { ProductCard } from "@/components/ProductCard";
 import { PlacementCard } from "@/components/PlacementCard";
 import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
+import { PLACMENT_PRESET } from "@/templates/templatesPlacmentPreset";
 
 /*
  * Hjelpefunksjon som konverterer en ukjent feil til en lesbar feilmelding.
@@ -67,8 +68,9 @@ export default function Page() {
   const [sceneTemplate, setSceneTemplate] = useState<Template | null>(null);
 
   // State for lastetilstander og feilmeldinger
-  const [busyScene, setBusyScene] = useState(false);
+  const [busyScene, setBusyScene] = useState<boolean>(false);
   const [busyGen, setBusyGen] = useState(false);
+  const [busyPlacement, setBusyPlacement] = useState<boolean>(false);
   const [err, setErr] = useState<string>("");
 
   // State for scenefiksing (scene refinement)
@@ -80,6 +82,8 @@ export default function Page() {
 
   // State for plasseringsinstruksjoner
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
+  const [selectedPlacementPreset, setSelectedPlacementPreset] = useState<string>("");
+  const [placementPresets, setPlacementPresets] = useState<PlacementPreset[]>(PLACMENT_PRESET);
 
   // State for generering av resultater
   const [variants, setVariants] = useState<number>(1);
@@ -218,7 +222,16 @@ export default function Page() {
       setSelectedVariant(0);
     }
     setBusyGen(false);    
-  } 
+  }
+  /*
+  * Funksjon for å hente forslag til produkt plasering fra GPT 5.4
+  */
+  
+  function getPlacementSuggestion(){
+    setBusyPlacement(true);
+    console.log("test");
+    setBusyPlacement(false);
+  }
 
   /*
   * Funksjon for oppdatering variabel for valgt bilde ved forespørsel til modeller.
@@ -333,7 +346,7 @@ export default function Page() {
             }`}
           >
             <EnvironmentCard templateId={templateId} setTemplateId={setTemplateId} templates={templates} generateScene={generateScene} 
-              darkMode={darkMode} sceneUrl={sceneUrl} busyScene={busyScene} busyGen={busyGen} sceneFixPrompt={sceneFixPrompt} setSceneFixPrompt={setSceneFixPrompt} 
+              darkMode={darkMode} sceneUrl={sceneUrl} busyGen={busyGen} busyScene={busyScene} busyPlacement={busyPlacement} sceneFixPrompt={sceneFixPrompt} setSceneFixPrompt={setSceneFixPrompt} 
               refineScene={refineScene} selectedModel={selectedModel} setSelectedModel={setSelectedModel}/>
             <h2>
               Velg 1–4 produkter
@@ -361,7 +374,7 @@ export default function Page() {
               </div>
             )}
             {/* Plassering av produkter i miljøbilde */}
-            <PlacementCard placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyScene={busyScene}/>      
+            <PlacementCard getPlacementSuggestion={getPlacementSuggestion} selectedPlacementPreset={selectedPlacementPreset} setSelectedPlacementPreset={setSelectedPlacementPreset} placementPresets={placementPresets} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene}/>      
             {err && <div className={styles.errorMessage}>{err}</div>}
           </section>
           <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>          

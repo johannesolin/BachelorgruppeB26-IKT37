@@ -1,4 +1,4 @@
-import { Template } from "@/templates/types";
+import { PlacementPreset, Template } from "@/templates/types";
 import { Product } from "../db/types";
 
 export interface ProductCardProps {
@@ -17,8 +17,9 @@ export interface EnvironmentCardProps {
     generateScene: () => void;
     darkMode: boolean;
     sceneUrl: string;
-    busyScene: boolean;
     busyGen: boolean;
+    busyScene: boolean;
+    busyPlacement: boolean;
     sceneFixPrompt: string;
     setSceneFixPrompt: (param: string) => void;
     refineScene: () => void;
@@ -42,6 +43,11 @@ export interface PlacementCardProps {
     placeProductsInScene: () => void;
     busyGen: boolean;
     busyScene: boolean;
+    busyPlacement: boolean;
+    placementPresets: PlacementPreset[];
+    selectedPlacementPreset: string;
+    setSelectedPlacementPreset: ( param: string ) => void;
+    getPlacementSuggestion: () => void;
 }
 
 export interface SelectProductByIdCardProps {
@@ -49,5 +55,5 @@ export interface SelectProductByIdCardProps {
     setProductIdInput: ( param: string ) => void;
     darkMode: boolean;
     addProductId: () => void;
-    selectedProducts: Product[];
+    selectedProducts: Product[];    
 }
