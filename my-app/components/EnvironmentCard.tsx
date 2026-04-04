@@ -15,6 +15,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
               className={`${styles.select} ${props.darkMode ? styles.dark : styles.light}`}
               disabled={props.busyGen || props.busyScene}
             >
+              <option value="" disabled selected hidden>Velg Modell</option>
               <option value="gpt-image-1.5" key="gpt-image-1.5">GPT-Image-1.5</option>
               <option value="flux-2-pro" key="flux-2-pro">FLUX-2-PRO</option>
             </select>
@@ -30,7 +31,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
                 </option>
               ))}
             </select>
-            <button onClick={props.generateScene} disabled={props.busyScene || props.busyGen}>{props.sceneUrl === "" ? "Generer Miljø" : "Regenerer Miljø" }</button>
+            <button onClick={props.generateScene} disabled={props.busyScene || props.busyGen || props.selectedModel === ""}>{props.sceneUrl === "" ? "Generer Miljø" : "Regenerer Miljø" }</button>
             <div className={styles.sceneContainer}>
               <div className={styles.sceneLabel}>Miljøbilde</div>
               {props.busyScene ? (

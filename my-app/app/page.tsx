@@ -5,7 +5,6 @@ import { DashboardNav } from "./navigation/DashboardNav";
 import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
 import { Product } from "@/db/types";
-import { SelectProductCard } from "@/components/SelectProductCard";
 import { templatesArray } from "@/templates/templates";
 import { Template } from "@/templates/types";
 import { EnvironmentCard } from "@/components/EnvironmentCard";
@@ -13,27 +12,6 @@ import { ResultsCard } from "@/components/ResultsCard";
 import { ProductCard } from "@/components/ProductCard";
 import { PlacementCard } from "@/components/PlacementCard";
 import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
-
-/*
- * Typedefinisjon for Template-objekter.
- * En template kan enten være av type "hard" (med forhåndsdefinert bildefil)
- * eller type "soft" (generert basert på tekstlig prompt).
- */
-
-/*
- * Typedefinisjon for SelectedProduct.
- * Representerer enten et opplastet produkt (last-opp) eller et produkt fra database (produktId).
- */
-
-type SelectedProduct =
-  | { kind: "last-opp"; id: string; file: File; previewUrl: string }
-  | {
-      kind: "produktId";
-      id: string;
-      productId: string;
-      name?: string;
-      bestHref?: string;
-    };
 
 /*
  * Hjelpefunksjon som konverterer en ukjent feil til en lesbar feilmelding.
@@ -316,7 +294,7 @@ export default function Page() {
    * Opprettet forhåndsvisninger for hver fil vises i brukergrensesnittet.
    */
 
-  function addUploads(files: FileList | null) {
+  /*function addUploads(files: FileList | null) {
     if (!files) return;
     setErr("");
     const incoming = Array.from(files);
@@ -335,7 +313,7 @@ export default function Page() {
       }));
       return [...prev, ...mapped];
     });
-  }
+  }*/
 
   /*
    * Returnerer JSX for hele dashbord-siden.
