@@ -32,3 +32,22 @@ export interface ResultsCardProps {
     selectedVariant: number;
     setSelectedVariant: (param: number) => void; 
 }
+
+export interface PlacementCardProps {
+    placementPrompt: string;
+    setPlacementPrompt: ( param: string ) => void;
+    darkMode: boolean;
+    variants: number;
+    setVariants: ( param: number ) => void;
+    placeProductsInScene: () => void;
+    busyGen: boolean;
+    busyScene: boolean;
+}
+
+export interface SelectProductByIdCardProps {
+    productIdInput: string;
+    setProductIdInput: ( param: string ) => void;
+    darkMode: boolean;
+    addProductId: () => void;
+    selectedProducts: Product[];
+}

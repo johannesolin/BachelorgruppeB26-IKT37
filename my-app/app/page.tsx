@@ -11,6 +11,8 @@ import { Template } from "@/templates/types";
 import { EnvironmentCard } from "@/components/EnvironmentCard";
 import { ResultsCard } from "@/components/ResultsCard";
 import { ProductCard } from "@/components/ProductCard";
+import { PlacementCard } from "@/components/PlacementCard";
+import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
 
 /*
  * Typedefinisjon for Template-objekter.
@@ -85,7 +87,6 @@ export default function Page() {
   // State for scenebildet som skal brukes som bakgrunn
   const [sceneUrl, setSceneUrl] = useState<string>("");
   const [sceneTemplate, setSceneTemplate] = useState<Template | null>(null);
-  const [sceneBlob, setSceneBlob] = useState<Blob | null>(null);
 
   // State for lastetilstander og feilmeldinger
   const [busyScene, setBusyScene] = useState(false);
@@ -143,10 +144,7 @@ export default function Page() {
   }, [darkMode]);  
 
   /*
-   * Laster scenebildet for en gitt template.
-   * Håndterer både "hard" templates (forhåndsdefinerte bilder)
-   * og "soft" templates (genererte bilder basert på prompt).
-   * Tilbakestiller resultater ved lasting av ny scene.
+   * Funksjon for å sende en request for generering av miljøscene basert på templats.
    */
 
   async function generateScene(){
@@ -178,6 +176,10 @@ export default function Page() {
     setBusyScene(false);
   }
 
+  /*
+  * Funksjon for reqwuest for redigering av miljøscene
+  */
+
   async function refineScene() {
     setBusyScene(true);
     const form = new FormData();
@@ -203,6 +205,10 @@ export default function Page() {
     if(data.length > 0) setSceneUrl(data);
     setBusyScene(false);
   }
+
+  /*
+  * Funksjon for request til å plasere valgte produkter i miljøscene.
+  */
 
   async function placeProductsInScene() {
     setBusyGen(true);
@@ -236,13 +242,15 @@ export default function Page() {
     setBusyGen(false);    
   } 
 
+  /*
+  * Funksjon for oppdatering variabel for valgt bilde ved forespørsel til modeller.
+  */
   function changeSelectedImage( productIndex: number, imageIndex: number ){
     selectedProducts[productIndex].selectedImage = imageIndex;
   }
 
   /*
    * Fjerner et produkt fra listen over valgte produkter.
-   * Frigjør objektURL hvis det er en opplastet fil.
    */
 
   function removeProduct(id: number) {
@@ -329,77 +337,6 @@ export default function Page() {
     });
   }
 
-
-
-
-  /*
-   * Genererer det endelige bildet med produkter plassert i scenen.
-   * Validerer at:
-   * - Scene er lastet
-   * - 1-4 produkter er valgt
-   * - Plasseringsinstruksjon er gitt
-   * Sender alle nødvendige data til API for bildegenering.
-   */
-
-  /*async function generate() {
-    try {
-      setErr("");
-      setResultDataUrls([]);
-      setSelectedVariant(0);
-
-      // Valider inputs
-      if (!sceneBlob) throw new Error("Miljøbilde er ikke klart ennå");
-      if (selectedProducts.length < 1 || selectedProducts.length > 4)
-        throw new Error("Velg 1–4 produkter");
-      if (!placementPrompt.trim()) throw new Error("Skriv en placement prompt");
-
-      setBusyGen(true);
-
-      // Opprett ordnet referanseliste over produkter
-      const orderedRefs = selectedProducts.map((p) =>
-        p.kind === "produktId"
-          ? ({ kind: "produktId", value: p.productId } as const)
-          : ({ kind: "last-opp", value: p.file.name } as const),
-      );
-
-      // Filtrer ut kun opplastede produkter
-      const uploads = selectedProducts.filter(
-        (p): p is Extract<SelectedProduct, { kind: "last-opp" }> =>
-          p.kind === "last-opp",
-      );
-
-      // Opprett FormData for API-kall
-      const fd = new FormData();
-      fd.append("placementPrompt", placementPrompt);
-      fd.append("variants", String(variants));
-      fd.append("orderedRefs", JSON.stringify(orderedRefs));
-
-      // Legg ved scenebildet
-      fd.append(
-        "scene",
-        new File([sceneBlob], "scene.png", {
-          type: sceneBlob.type || "image/png",
-        }),
-      );
-
-      // Legg ved alle opplastede produktfiler
-      uploads.forEach((u) => fd.append("produkter", u.file));
-
-      // Send til API for generering
-      const res = await fetch("/api/generate", { method: "POST", body: fd });
-      const json = (await res.json()) as GenerateResponse;
-      if (!res.ok) throw new Error(json.error || "generering feilet");
-
-      // Lagre genererte resultater
-      setResultDataUrls(json.resultDataUrls ?? []);
-      setSelectedVariant(0);
-    } catch (e) {
-      setErr(toErrorMessage(e));
-    } finally {
-      setBusyGen(false);
-    }
-  }*/
-
   /*
    * Returnerer JSX for hele dashbord-siden.
    * DashboardNav mottar darkMode og setDarkMode for temakontroll.
@@ -431,94 +368,8 @@ export default function Page() {
               Skriv inn Produktnummer eller ProduktID
             </div>
             {/* Valg av produkt */}
-            <div className={styles.flexContainer}>
-              <input
-                value={productIdInput}
-                onChange={(e) => setProductIdInput(e.target.value)}
-                placeholder="Produktnummer Her..."
-                className={`${styles.input} ${styles.flex1} ${
-                  darkMode ? styles.dark : styles.light
-                }`}
-              />
-              <button
-                onClick={addProductId}
-                disabled={selectedProducts.length >= 4}
-              >
-                Legg til
-              </button>
-            </div>
-            {/* input av fil */}
-            <div
-              className={`${styles.flexContainerStart} ${styles.flexContainer}`}
-            >
-              <div
-                className={`${styles.fileListContainer} ${
-                  darkMode ? styles.dark : styles.light
-                } ${
-                  selectedProducts.filter((p) => p.kind === "last-opp").length >
-                  0
-                    ? styles.filled
-                    : styles.empty
-                }`}
-              >
-                {selectedProducts.filter((p) => p.kind === "last-opp")
-                  .length === 0
-                  ? "Velg Fil fra Datamaskin. (Ingen fil valgt)"
-                  : selectedProducts
-                      .filter((p) => p.kind === "last-opp")
-                      .map((p) => (
-                        <div
-                          key={p.id}
-                          className={`${styles.fileItem} ${
-                            darkMode ? styles.dark : styles.light
-                          }`}
-                        >
-                          {p.kind === "last-opp" && p.file.name}
-                        </div>
-                      ))}
-              </div>
-              <label className={styles.fileLabel}>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const input = document.querySelector(
-                      'input[type="file"][data-file-input]',
-                    ) as HTMLInputElement;
-                    input?.click();
-                  }}
-                  className={`${styles.buttonCompact} ${
-                    darkMode
-                      ? styles.buttonCompactDark
-                      : styles.buttonCompactLight
-                  }`}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.classList.add(
-                      darkMode
-                        ? styles.buttonCompactDarkHover
-                        : styles.buttonCompactLightHover,
-                    );
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.classList.remove(
-                      darkMode
-                        ? styles.buttonCompactDarkHover
-                        : styles.buttonCompactLightHover,
-                    );
-                  }}
-                >
-                  Legg til fil
-                </button>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={(e) => addUploads(e.target.files)}
-                  disabled={selectedProducts.length >= 4}
-                  data-file-input
-                  className={styles.fileInput}
-                />
-              </label>
-            </div>
+            <SelectproductByIdCard productIdInput={productIdInput} setProductIdInput={setProductIdInput} darkMode={darkMode} addProductId={addProductId} selectedProducts={selectedProducts}/>
+            {/* input av fil */}            
             {/** Visning av valgte produkter */}
             {selectedProducts.length > 0 && (
               <div
@@ -531,46 +382,8 @@ export default function Page() {
                 ))}                     
               </div>
             )}
-
-            <h2
-              className={`${styles.heading2Large} ${styles.heading2} ${
-                darkMode ? styles.dark : styles.light
-              }`}
-            >
-              ØNSKET PLASSERING PÅ PRODUKT(ENE)
-            </h2>
-            <textarea
-              value={placementPrompt}
-              onChange={(e) => setPlacementPrompt(e.target.value)}
-              rows={6}
-              placeholder="Eks: Plasser produktet i sentrum av bordet. Orienter det mot venstre. Produktet skal være lettsynlig og dominere komposisjonen."
-              className={`${styles.textarea} ${darkMode ? styles.dark : styles.light}`}
-            />
-
-            <div className={styles.variantsContainer}>
-              <label className={styles.flex1}>
-                <div className={styles.variantsLabel}>Varianter</div>
-                <select
-                  value={variants}
-                  onChange={(e) => setVariants(Number(e.target.value))}
-                  className={`${styles.select} ${darkMode ? styles.dark : styles.light}`}
-                >
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={4}>4</option>
-                  <option value={6}>6</option>
-                  <option value={8}>8</option>
-                </select>
-              </label>
-              <button
-                onClick={placeProductsInScene}
-                disabled={busyGen || busyScene}
-                className={`${styles.button} ${styles.flex1} ${styles.flexEnd}`}
-              >
-                {busyGen ? "Genererer..." : "Generer"}
-              </button>
-            </div>
-
+            {/* Plassering av produkter i miljøbilde */}
+            <PlacementCard placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyScene={busyScene}/>      
             {err && <div className={styles.errorMessage}>{err}</div>}
           </section>
           <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>          
