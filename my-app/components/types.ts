@@ -46,6 +46,9 @@ export interface PlacementCardProps {
     busyGen: boolean;
     busyScene: boolean;
     busyPlacement: boolean;
+    selectedProducts: Product[];
+    selectedModel: "gpt-image-1.5" | "flux-2-pro" | "";
+    scenePrompt: string;
     placementPresets: PlacementPreset[];
     selectedPlacementPreset: string;
     setSelectedPlacementPreset: ( param: string ) => void;

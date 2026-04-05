@@ -15,7 +15,7 @@ export function SelectproductByIdCard( props: SelectProductByIdCardProps ){
               />
               <button
                 onClick={props.addProductId}
-                disabled={props.selectedProducts.length >= 4}
+                disabled={props.selectedProducts.length >= 4 || props.productIdInput.length === 0}
               >
                 Legg til
               </button>

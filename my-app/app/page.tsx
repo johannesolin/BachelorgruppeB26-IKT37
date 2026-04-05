@@ -14,41 +14,6 @@ import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
 import { PLACMENT_PRESET } from "@/templates/templatesPlacmentPreset";
 
 /*
- * Hjelpefunksjon som konverterer en ukjent feil til en lesbar feilmelding.
- * Hvis feilen er en Error-instans, returneres dens melding, ellers konverteres den til string.
- */
-
-function toErrorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : String(e);
-}
-
-/*
- * Genererer en unik identifikator ved bruk av globalThis.crypto.randomUUID()
- * eller en fallback-løsning basert på tidsstempel og tilfeldig tall.
- */
-
-function uuid(): string {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-}
-
-/*
- * Leser feilmelding fra API-respons.
- * Prøver først å parse responsen som JSON, og returnerer error-feltet hvis det finnes,
- * ellers returneres hele teksten eller bare HTTP-statuskoden.
- */
-
-async function readErrorMessage(res: Response): Promise<string> {
-  const text = await res.text();
-  if (!text) return `HTTP ${res.status}`;
-  try {
-    const j = JSON.parse(text) as { error?: string };
-    return j.error ?? text;
-  } catch {
-    return text;
-  }
-}
-
-/*
  * Hovedkomponent for dashbordet.
  * Håndterer alle aspekter av miljøbilde- og produktplasseringsflyten,
  * inkludert template-valg, scenemanipulasjon, produktvalg og generering av endelige bilder.
@@ -132,32 +97,40 @@ export default function Page() {
    */
 
   async function generateScene(){
-    setBusyScene(true);
-    const temp = templates.find(temp => temp.id === templateId) as Template;
-    const form = new FormData();      
+    try{
+      setErr("");
+      setBusyScene(true);
+      const temp = templates.find(temp => temp.id === templateId) as Template;
+      const form = new FormData();      
 
-    form.append("size", String(temp.size));
-    form.append("prompt", String(scenePrompt).trim());    
-    form.append("quality", String(temp.quality));
+      form.append("size", String(temp.size));
+      form.append("prompt", String(scenePrompt).trim());    
+      form.append("quality", String(temp.quality));
 
-    let respons;
-    
-    if(selectedModel === "gpt-image-1.5"){
-      respons = await fetch("/api/openAi/generateEnvironment", {
-        method: "POST",
-        body: form,
-      });
-    } else {
-      respons = await fetch("/api/flux2Pro/generateEnvironment", {
-        method: "POST",
-        body: form,
-      });
+      let respons;
+      
+      if(selectedModel === "gpt-image-1.5"){
+        respons = await fetch("/api/openAi/generateEnvironment", {
+          method: "POST",
+          body: form,
+        });
+      } else {
+        respons = await fetch("/api/flux2Pro/generateEnvironment", {
+          method: "POST",
+          body: form,
+        });
+      }
+
+      const data = await respons.json();    
+      setSceneUrl(data);
+      setSceneTemplate(temp);
+      setBusyScene(false);
+    } catch (e){
+      setBusyScene(false);
+      console.error(e);
+      setErr("Et problem oppsto ved generering av miljøbilde");
+      throw new Error("Et problem oppsto ved generering av miljøbilde");
     }
-
-    const data = await respons.json();    
-    setSceneUrl(data);
-    setSceneTemplate(temp);
-    setBusyScene(false);
   }
 
   /*
@@ -165,29 +138,37 @@ export default function Page() {
   */
 
   async function refineScene() {
-    setBusyScene(true);
-    const form = new FormData();
-    form.append("size", String(sceneTemplate?.size));
-    form.append("prompt", String(sceneFixPrompt).trim());    
-    form.append("quality", String(sceneTemplate?.quality));
-    form.append("scene", sceneUrl);
+    try{
+      setErr("");
+      setBusyScene(true);
+      const form = new FormData();
+      form.append("size", String(sceneTemplate?.size));
+      form.append("prompt", String(sceneFixPrompt).trim());    
+      form.append("quality", String(sceneTemplate?.quality));
+      form.append("scene", sceneUrl);
 
-    let respons;
-    if(selectedModel === "gpt-image-1.5"){
-      respons = await fetch("/api/openAi/editEnvironment", {
-        method: "POST",
-        body: form,
-      });
-    } else {
-      respons = await fetch("/api/flux2Pro/editEnvironment", {
-        method: "POST",
-        body: form,
-      });
+      let respons;
+      if(selectedModel === "gpt-image-1.5"){
+        respons = await fetch("/api/openAi/editEnvironment", {
+          method: "POST",
+          body: form,
+        });
+      } else {
+        respons = await fetch("/api/flux2Pro/editEnvironment", {
+          method: "POST",
+          body: form,
+        });
+      }
+
+      const data = await respons.json();
+      if(data.length > 0) setSceneUrl(data);
+      setBusyScene(false);
+    } catch (e){
+      setBusyScene(false);
+      console.error(e);
+      setErr("Et problem oppsto ved generering av miljøbilde");
+      throw new Error("Et problem oppsto ved generering av miljøbilde");
     }
-
-    const data = await respons.json();
-    if(data.length > 0) setSceneUrl(data);
-    setBusyScene(false);
   }
 
   /*
@@ -195,45 +176,51 @@ export default function Page() {
   */
 
   async function placeProductsInScene() {
-    setBusyGen(true);
-    const form = new FormData();
-    form.append("prompt", String(placementPrompt).trim());
-    form.append("variants", String(variants));
-    form.append("scene", sceneUrl);
-    form.append("productCount", String(selectedProducts.length));    
-    for(let i = 0; i < selectedProducts.length; i++){
-        form.append(`product${i}`, selectedProducts[i].images[selectedProducts[i].selectedImage].href);
-    }
+    try{
+      setErr("");
+      setBusyGen(true);
+      const form = new FormData();
+      form.append("prompt", String(placementPrompt).trim());
+      form.append("variants", String(variants));
+      form.append("scene", sceneUrl);
+      form.append("productCount", String(selectedProducts.length));    
+      for(let i = 0; i < selectedProducts.length; i++){
+          form.append(`product${i}`, selectedProducts[i].images[selectedProducts[i].selectedImage].href);
+      }
 
-    let respons;
-    if(selectedModel === "gpt-image-1.5"){
-      respons = await fetch("/api/openAi/productInEnvironment", {
-        method: "POST",
-        body: form,
-      })
-    } else {
-      respons = await fetch("/api/flux2Pro/productInEnvironment", {
-        method: "POST",
-        body: form,
-      })
-    }
+      let respons;
+      if(selectedModel === "gpt-image-1.5"){
+        respons = await fetch("/api/openAi/productInEnvironment", {
+          method: "POST",
+          body: form,
+        })
+      } else {
+        respons = await fetch("/api/flux2Pro/productInEnvironment", {
+          method: "POST",
+          body: form,
+        })
+      }
 
-    const data = await respons.json();
-    if(data.length > 0){
-      setResultDataUrls(data);
-      setSelectedVariant(0);
+      const data = await respons.json();
+      if(data.length > 0){
+        setResultDataUrls(data);
+        setSelectedVariant(0);
+      }
+      setBusyGen(false);
+    } catch (e){
+      setBusyGen(false);
+      console.error(e);
+      setErr("Et problem oppsto ved generering av bilde");
+      throw new Error("Et problem oppsto ved generering av bilde");
     }
-    setBusyGen(false);    
   }
   /*
-  * Funksjon for å hente forslag til produkt plasering fra GPT 5.4
+  * Funksjon for sending av request for forslag til produkt plasering fra GPT 5.4.
   */
   
-  async function getPlacementSuggestion(){
-    if(!scenePrompt) throw new Error("Velg mal for miljøbilde eller skriv egen tekst!");
-    if(selectedModel === "") throw new Error("Velg modell for generering av bilder!");
-    if(selectedProducts.length === 0) throw new Error("Legg til minst et produkt!");
+  async function getPlacementSuggestion(){     
     try{
+      setErr("");
       setBusyPlacement(true);
       const productSummary = buildProductSummary();
 
@@ -256,6 +243,7 @@ export default function Page() {
     } catch (e){
       setBusyPlacement(false);
       console.error(e);
+      setErr("Henting av plasserings forslag feilet!");
       throw new Error("Henting av plasserings forslag feilet!");
     }
   }
@@ -274,7 +262,7 @@ export default function Page() {
   }
 
   /*
-  * Funksjon for oppdatering variabel for valgt bilde ved forespørsel til modeller.
+  * Funksjon for oppdatering av variabel for valgt bilde for produkter.
   */
 
   function changeSelectedImage( productIndex: number, imageIndex: number ){
@@ -286,8 +274,15 @@ export default function Page() {
    */
 
   function removeProduct(id: number) {
-    const newArray = selectedProducts.filter(item => item.productId !== id);
-    setSelectedProducts(newArray);
+    try{
+      setErr("");
+      const newArray = selectedProducts.filter(item => item.productId !== id);
+      setSelectedProducts(newArray);
+    } catch (e){
+      console.error(e);
+      setErr("En feil oppsto ved fjering av produkt");
+      throw new Error("En feil oppsto ved fjering av produkt");
+    }
   }
 
   /*
@@ -297,16 +292,23 @@ export default function Page() {
    */
 
   function moveProduct(id: number, dir: -1 | 1) {
-    setSelectedProducts((prev) => {
-      const idx = prev.findIndex((p) => p.productId === id);
-      if (idx < 0) return prev;
-      const nextIdx = idx + dir;
-      if (nextIdx < 0 || nextIdx >= prev.length) return prev;
-      const copy = [...prev];
-      const [item] = copy.splice(idx, 1);
-      copy.splice(nextIdx, 0, item);
-      return copy;
-    });
+    try{
+      setErr("");
+      setSelectedProducts((prev) => {
+        const idx = prev.findIndex((p) => p.productId === id);
+        if (idx < 0) return prev;
+        const nextIdx = idx + dir;
+        if (nextIdx < 0 || nextIdx >= prev.length) return prev;
+        const copy = [...prev];
+        const [item] = copy.splice(idx, 1);
+        copy.splice(nextIdx, 0, item);
+        return copy;
+      });
+    } catch (e){
+      console.error(e);
+      setErr("En feil oppsto ved flytting av produktet");
+      throw new Error("En feil oppsto ved flytting av produktet");
+    }
   }
 
   /*
@@ -330,14 +332,14 @@ export default function Page() {
 
       if (!response.ok) throw new Error(data.error || "produkt henting feilet");
 
-      // legg til hentet produkt i produkt array
       setSelectedProducts((prev) =>  [...prev, data])
 
-      // Tømming av inputfelt etter velykket henting av produkt
       setProductIdInput("");
     } catch (e){
-      setErr(toErrorMessage(e));
-    }    
+      console.error(e);
+      setErr("En feil oppsto når produktet skulle legges til");
+      throw new Error("En feil oppsto når produktet skulle legges til");
+    }  
   }
 
   /*
@@ -415,7 +417,7 @@ export default function Page() {
               </div>
             )}
             {/* Plassering av produkter i miljøbilde */}
-            <PlacementCard getPlacementSuggestion={getPlacementSuggestion} selectedPlacementPreset={selectedPlacementPreset} setSelectedPlacementPreset={setSelectedPlacementPreset} placementPresets={placementPresets} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene}/>      
+            <PlacementCard selectedProducts={selectedProducts} selectedModel={selectedModel} scenePrompt={scenePrompt} getPlacementSuggestion={getPlacementSuggestion} selectedPlacementPreset={selectedPlacementPreset} setSelectedPlacementPreset={setSelectedPlacementPreset} placementPresets={placementPresets} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene}/>      
             {err && <div className={styles.errorMessage}>{err}</div>}
           </section>
           <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>          
