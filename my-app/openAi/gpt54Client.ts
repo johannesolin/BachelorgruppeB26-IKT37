@@ -3,7 +3,7 @@ import { AzureOpenAI } from "openai";
 
 let client: AzureOpenAI | null = null;
 
-export function getAzureOpenAiClient(): AzureOpenAI {
+function getAzureOpenAiClient(): AzureOpenAI {
     if(client) return client;
 
     const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
@@ -22,3 +22,22 @@ export function getAzureOpenAiClient(): AzureOpenAI {
 
     return client;
 }
+
+export async function gpt54PlacementSuggestionsRequest( systemInput: string, userInput: string ){
+    const client = getAzureOpenAiClient();
+    const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_GPT54;
+
+    const response = await client.responses.create({
+        model: deployment,
+        input: [ 
+            {role: "system", content: systemInput},
+            {role: "user", content: userInput},
+        ]
+    });
+
+    const text = response.output_text.trim()
+    if(!text) throw new Error("Språkmodellen returnerte tom tekst.");
+
+    return text;
+}
+

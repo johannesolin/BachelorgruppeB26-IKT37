@@ -4,7 +4,7 @@ import { AddProductsToScene, EditImg, GenerateImg } from "./types";
 
 let client: AzureOpenAI | null = null;
 
-export function getAzureOpenAiClient(): AzureOpenAI {
+function getAzureOpenAiClient(): AzureOpenAI {
     if(client) return client;
 
     const endpoint = process.env.AZURE_OPENAI_ENDPOINT;

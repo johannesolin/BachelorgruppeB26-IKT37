@@ -2,7 +2,7 @@ import { generateImg } from "@/openAi/client";
 import { GenerateImg, Quality, Size } from "@/openAi/types";
 import { NextResponse } from "next/server";
 
- export async function POST( req: Request) {
+ export async function POST( req: Request ) {
     try{
         const form = await req.formData();
 

@@ -31,7 +31,7 @@ export function PlacementCard( props: PlacementCardProps ){
               placeholder="Eks: Plasser produktet i sentrum av bordet. Orienter det mot venstre. Produktet skal være lettsynlig og dominere komposisjonen."
               className={`${styles.textarea} ${props.darkMode ? styles.dark : styles.light}`}
             />
-            <button onClick={props.getPlacementSuggestion} disabled={props.busyGen || props.busyScene || props.busyPlacement || props.placementPrompt.length === 0}>{props.busyPlacement ? "Henter forslag fra språkmodell..." : "Få forslag fra språkmodell (GPT 5.4)"}</button>
+            <button onClick={props.getPlacementSuggestion} disabled={props.busyGen || props.busyScene || props.busyPlacement}>{props.busyPlacement ? "Henter forslag fra språkmodell..." : "Få forslag fra språkmodell (GPT 5.4)"}</button>
             <div className={styles.variantsContainer}>
               <label className={styles.flex1}>
                 <div className={styles.variantsLabel}>Varianter</div>

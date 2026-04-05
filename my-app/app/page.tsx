@@ -1,5 +1,4 @@
 "use client";
-// Importering av React-hooks og komponenter som er nødvendige for siden
 import { useEffect, useState } from "react";
 import { DashboardNav } from "./navigation/DashboardNav";
 import styles from "./page.module.css";
@@ -57,11 +56,14 @@ async function readErrorMessage(res: Response): Promise<string> {
 
 export default function Page() {
   // State for modell valg
-  const [selectedModel, setSelectedModel] = useState<string>("");
+  const [selectedModel, setSelectedModel] = useState< "gpt-image-1.5" | "flux-2-pro" | "">("");
 
   // State for templates og valgt template
   const [templates, setTemplates] = useState<Template[]>(templatesArray as Template[]);
-  const [templateId, setTemplateId] = useState<string>(templates[0].id as string);
+  const [templateId, setTemplateId] = useState<string>(templates[0].id);
+
+  // State for tekst som skal brukes til å generere scenebilde
+  const [scenePrompt, setScenePrompt] = useState<string>(templates[0].scenePrompt);
 
   // State for scenebildet som skal brukes som bakgrunn
   const [sceneUrl, setSceneUrl] = useState<string>("");
@@ -135,7 +137,7 @@ export default function Page() {
     const form = new FormData();      
 
     form.append("size", String(temp.size));
-    form.append("prompt", String(temp.scenePrompt).trim());    
+    form.append("prompt", String(scenePrompt).trim());    
     form.append("quality", String(temp.quality));
 
     let respons;
@@ -227,15 +229,54 @@ export default function Page() {
   * Funksjon for å hente forslag til produkt plasering fra GPT 5.4
   */
   
-  function getPlacementSuggestion(){
-    setBusyPlacement(true);
-    console.log("test");
-    setBusyPlacement(false);
+  async function getPlacementSuggestion(){
+    if(!scenePrompt) throw new Error("Velg mal for miljøbilde eller skriv egen tekst!");
+    if(selectedModel === "") throw new Error("Velg modell for generering av bilder!");
+    if(selectedProducts.length === 0) throw new Error("Legg til minst et produkt!");
+    try{
+      setBusyPlacement(true);
+      const productSummary = buildProductSummary();
+
+      const respons = await fetch("/api/openAi/placementSuggestion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          selectedModel,
+          scenePrompt,
+          productSummary,
+        }),
+      });
+
+      const data = await respons.json();
+      if(data.length > 0){
+        setPlacementPrompt(data);
+      }      
+      setBusyPlacement(false);
+
+    } catch (e){
+      setBusyPlacement(false);
+      console.error(e);
+      throw new Error("Henting av plasserings forslag feilet!");
+    }
+  }
+
+  /*
+  * Funksjon for sammensetting av produkt sammendrag
+  */
+
+  function buildProductSummary(): string{
+    const text: string[] = [];
+    selectedProducts.forEach((p, index) => {
+      const role = index === 0 ? "1 - HOVEDPRODUKT (skal prioriteres)" : `${index + 1} - sekundær`;
+      text.push(`${role}: produktid: ${p.productId}, produktnavn fra database: ${p.name?.trim()}, link til produktbilde: ${p.images[p.selectedImage].href}`)
+    });
+    return text.join("\n\n");
   }
 
   /*
   * Funksjon for oppdatering variabel for valgt bilde ved forespørsel til modeller.
   */
+
   function changeSelectedImage( productIndex: number, imageIndex: number ){
     selectedProducts[productIndex].selectedImage = imageIndex;
   }
@@ -345,7 +386,7 @@ export default function Page() {
               darkMode ? styles.dark : styles.light
             }`}
           >
-            <EnvironmentCard templateId={templateId} setTemplateId={setTemplateId} templates={templates} generateScene={generateScene} 
+            <EnvironmentCard templateId={templateId} scenePrompt={scenePrompt} setScenePrompt={setScenePrompt} setTemplateId={setTemplateId} templates={templates} generateScene={generateScene} 
               darkMode={darkMode} sceneUrl={sceneUrl} busyGen={busyGen} busyScene={busyScene} busyPlacement={busyPlacement} sceneFixPrompt={sceneFixPrompt} setSceneFixPrompt={setSceneFixPrompt} 
               refineScene={refineScene} selectedModel={selectedModel} setSelectedModel={setSelectedModel}/>
             <h2>

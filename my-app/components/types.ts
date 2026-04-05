@@ -14,6 +14,8 @@ export interface EnvironmentCardProps {
     templateId: string;
     setTemplateId: (param: string) => void;
     templates: Template[];
+    scenePrompt: string;
+    setScenePrompt: ( param: string) => void;
     generateScene: () => void;
     darkMode: boolean;
     sceneUrl: string;
@@ -24,7 +26,7 @@ export interface EnvironmentCardProps {
     setSceneFixPrompt: (param: string) => void;
     refineScene: () => void;
     selectedModel: string;
-    setSelectedModel: ( param: string ) => void;
+    setSelectedModel: ( param: "gpt-image-1.5" | "" | "flux-2-pro" ) => void;
 }
 
 export interface ResultsCardProps {
