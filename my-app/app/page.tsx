@@ -1,97 +1,17 @@
 "use client";
-
-// Importering av React-hooks og komponenter som er nødvendige for siden
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardNav } from "./navigation/DashboardNav";
 import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
-import { NextResponse } from "next/server";
-
-/*
- * Typedefinisjon for Template-objekter.
- * En template kan enten være av type "hard" (med forhåndsdefinert bildefil)
- * eller type "soft" (generert basert på tekstlig prompt).
- */
-
-type Template =
-  | { id: string; name: string; type: "hard"; baseScene: { assetPath: string } }
-  | {
-      id: string;
-      name: string;
-      type: "soft";
-      scenePrompt: string;
-      size?: string;
-      quality?: string;
-    };
-
-/*
- * Typedefinisjon for SelectedProduct.
- * Representerer enten et opplastet produkt (last-opp) eller et produkt fra database (produktId).
- */
-
-type SelectedProduct =
-  | { kind: "last-opp"; id: string; file: File; previewUrl: string }
-  | {
-      kind: "produktId";
-      id: string;
-      productId: string;
-      name?: string;
-      bestHref?: string;
-    };
-
-/*
- * Typedefinisjon for respons fra generate-APIet.
- * Inneholder enten resulterende data-URLer eller en feilmelding.
- */
-
-type GenerateResponse = { resultDataUrls?: string[]; error?: string };
-
-/*
- * Typedefinisjon for respons fra produktoppslagings-APIet.
- * Inneholder produktinformasjon eller feilmelding.
- */
-
-type ProductLookupResponse = {
-  found?: boolean;
-  product?: { productId: string; name: string; categoryName?: string };
-  bestHref?: string | null;
-  error?: string;
-};
-
-/*
- * Hjelpefunksjon som konverterer en ukjent feil til en lesbar feilmelding.
- * Hvis feilen er en Error-instans, returneres dens melding, ellers konverteres den til string.
- */
-
-function toErrorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : String(e);
-}
-
-/*
- * Genererer en unik identifikator ved bruk av globalThis.crypto.randomUUID()
- * eller en fallback-løsning basert på tidsstempel og tilfeldig tall.
- */
-
-function uuid(): string {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-}
-
-/*
- * Leser feilmelding fra API-respons.
- * Prøver først å parse responsen som JSON, og returnerer error-feltet hvis det finnes,
- * ellers returneres hele teksten eller bare HTTP-statuskoden.
- */
-
-async function readErrorMessage(res: Response): Promise<string> {
-  const text = await res.text();
-  if (!text) return `HTTP ${res.status}`;
-  try {
-    const j = JSON.parse(text) as { error?: string };
-    return j.error ?? text;
-  } catch {
-    return text;
-  }
-}
+import { Product } from "@/db/types";
+import { templatesArray } from "@/templates/templates";
+import { PlacementPreset, Template } from "@/templates/types";
+import { EnvironmentCard } from "@/components/EnvironmentCard";
+import { ResultsCard } from "@/components/ResultsCard";
+import { ProductCard } from "@/components/ProductCard";
+import { PlacementCard } from "@/components/PlacementCard";
+import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
+import { PLACMENT_PRESET } from "@/templates/templatesPlacmentPreset";
 
 /*
  * Hovedkomponent for dashbordet.
@@ -100,79 +20,45 @@ async function readErrorMessage(res: Response): Promise<string> {
  */
 
 export default function Page() {
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [templateId, setTemplateId] = useState<string>("");
+  // State for modell valg
+  const [selectedModel, setSelectedModel] = useState< "gpt-image-1.5" | "flux-2-pro" | "">("");
 
-  /*
-   * State for scenebildet som skal brukes som bakgrunn
-   */
+  // State for templates og valgt template
+  const [templates, setTemplates] = useState<Template[]>(templatesArray as Template[]);
+  const [templateId, setTemplateId] = useState<string>(templates[0].id);
 
+  // State for tekst som skal brukes til å generere scenebilde
+  const [scenePrompt, setScenePrompt] = useState<string>(templates[0].scenePrompt);
+
+  // State for scenebildet som skal brukes som bakgrunn
   const [sceneUrl, setSceneUrl] = useState<string>("");
-  const [sceneBlob, setSceneBlob] = useState<Blob | null>(null);
+  const [sceneTemplate, setSceneTemplate] = useState<Template | null>(null);
 
-  /*
-   * State for lastetilstander og feilmeldinger
-   */
-
-  const [busyScene, setBusyScene] = useState(false);
+  // State for lastetilstander og feilmeldinger
+  const [busyScene, setBusyScene] = useState<boolean>(false);
   const [busyGen, setBusyGen] = useState(false);
+  const [busyPlacement, setBusyPlacement] = useState<boolean>(false);
   const [err, setErr] = useState<string>("");
 
-  /*
-   * State for scenefiksing (scene refinement)
-   */
-
+  // State for scenefiksing (scene refinement)
   const [sceneFixPrompt, setSceneFixPrompt] = useState("");
 
-  /*
-   * State for produktvalg
-   */
-
+  // State for produktvalg
   const [productIdInput, setProductIdInput] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>(
-    [],
-  );
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
 
-  /*
-   * State for plasseringsinstruksjoner
-   */
-
+  // State for plasseringsinstruksjoner
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
+  const [selectedPlacementPreset, setSelectedPlacementPreset] = useState<string>("");
+  const [placementPresets, setPlacementPresets] = useState<PlacementPreset[]>(PLACMENT_PRESET);
 
-  /*
-   * State for generering av resultater
-   */
-
-  const [variants, setVariants] = useState<number>(4);
+  // State for generering av resultater
+  const [variants, setVariants] = useState<number>(1);
   const [resultDataUrls, setResultDataUrls] = useState<string[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<number>(0);
 
-  /*
-   * State for mørkt/lyst tema
-   */
+  // State for mørkt/lyst tema
   const [darkMode, setDarkModeState] = useState<boolean>(true);
-
-  /*
-   * Henter filene fra API-et vårt når siden laster
-   */
-
-  useEffect(() => {
-    async function fetchTemplates() {
-      try {
-        const res = await fetch("/api/templates");
-        const data = await res.json();
-        setTemplates(data);
-
-        // Velg den første filen automatisk
-        if (data.length > 0) {
-          setTemplateId(data[0].id);
-        }
-      } catch (e) {
-        setErr("Klarte ikke laste bilder fra templates-mappen");
-      }
-    }
-    fetchTemplates();
-  }, []);
 
   /*
    * Laster lagret tema fra localStorage ved komponentens montering.
@@ -192,42 +78,6 @@ export default function Page() {
     saveTheme(isDark ? "dark" : "light");
   };
 
-  /*
-   * Memoized valg av gjeldende template basert på templateId.
-   * Oppdateres kun når templates eller templateId endres.
-   */
-
-  const selectedTemplate = useMemo(
-    () => templates.find((t) => t.id === templateId) ?? null,
-    [templates, templateId],
-  );
-
-  /*
-   * Hjelpefunksjon som setter scene fra en Blob.
-   * Håndterer opprydding av tidligere objektURLer for å unngå minnelekk.
-   */
-
-  function setSceneFromBlob(blob: Blob) {
-    setSceneBlob(blob);
-    setSceneUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(blob);
-    });
-  }
-
-  /*
-   * Cleanup-effekt som frigjør alle objektURLer når komponenten demonteres.
-   * Dette forhindrer minnelekkasje fra både scene og opplastede produkter.
-   */
-
-  useEffect(() => {
-    return () => {
-      if (sceneUrl) URL.revokeObjectURL(sceneUrl);
-      selectedProducts.forEach((p) => {
-        if (p.kind === "last-opp") URL.revokeObjectURL(p.previewUrl);
-      });
-    };
-  }, []);
 
   /*
    * Effekt som oppdaterer document-nivåets colorScheme basert på darkMode.
@@ -240,70 +90,199 @@ export default function Page() {
     } else {
       document.documentElement.style.colorScheme = "light";
     }
-  }, [darkMode]);
+  }, [darkMode]);  
 
   /*
-   * Henter tilgjengelige templates fra API ved komponentens montering.
-   * Setter automatisk første template som valgt hvis det finnes noen.
+   * Funksjon for å sende en request for generering av miljøscene basert på templats.
    */
 
-  useEffect(() => {
-    (async () => {
-      const res = await fetch("/api/templates");
-      const json = (await res.json()) as Template[];
-      setTemplates(json);
-      if (json.length) setTemplateId(json[0].id);
-    })();
-  }, []);
+  async function generateScene(){
+    try{
+      setErr("");
+      setBusyScene(true);
+      const temp = templates.find(temp => temp.id === templateId) as Template;
+      const form = new FormData();      
 
-  /*
-   * Laster scenebildet for en gitt template.
-   * Håndterer både "hard" templates (forhåndsdefinerte bilder)
-   * og "soft" templates (genererte bilder basert på prompt).
-   * Tilbakestiller resultater ved lasting av ny scene.
-   */
+      form.append("size", String(temp.size));
+      form.append("prompt", String(scenePrompt).trim());    
+      form.append("quality", String(temp.quality));
 
-const loadSceneForTemplate = async (tid: string) => {
-  // 1. Stopp hvis ID mangler helt
-  if (!tid) return;
+      let respons;
+      
+      if(selectedModel === "gpt-image-1.5"){
+        respons = await fetch("/api/openAi/generateEnvironment", {
+          method: "POST",
+          body: form,
+        });
+      } else {
+        respons = await fetch("/api/flux2Pro/generateEnvironment", {
+          method: "POST",
+          body: form,
+        });
+      }
 
-  setBusyScene(true);
-  try {
-    const res = await fetch(`/api/template-image?templateId=${tid}`);
-
-    // Hvis API-et sender et bilde (Blob), gjør dette:
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    setSceneUrl(url);
-    setSceneBlob(blob);
-  } catch (err) {
-    console.error("Feil ved lasting av bilde:", err);
-    setErr("Kunne ikke laste bakgrunnsbilde.");
-  } finally {
-    setBusyScene(false);
+      const data = await respons.json();    
+      setSceneUrl(data);
+      setSceneTemplate(temp);
+      setBusyScene(false);
+    } catch (e){
+      setBusyScene(false);
+      console.error(e);
+      setErr("Et problem oppsto ved generering av miljøbilde");
+      throw new Error("Et problem oppsto ved generering av miljøbilde");
+    }
   }
-};
 
   /*
-   * Effekt som trigger sceneinnlasting når templateId eller templates endres.
-   */
+  * Funksjon for reqwuest for redigering av miljøscene
+  */
 
-  useEffect(() => {
-    if (!templateId) return;
-    loadSceneForTemplate(templateId).catch((e) => setErr(toErrorMessage(e)));
-  }, [templateId, templates]);
+  async function refineScene() {
+    try{
+      setErr("");
+      setBusyScene(true);
+      const form = new FormData();
+      form.append("size", String(sceneTemplate?.size));
+      form.append("prompt", String(sceneFixPrompt).trim());    
+      form.append("quality", String(sceneTemplate?.quality));
+      form.append("scene", sceneUrl);
+
+      let respons;
+      if(selectedModel === "gpt-image-1.5"){
+        respons = await fetch("/api/openAi/editEnvironment", {
+          method: "POST",
+          body: form,
+        });
+      } else {
+        respons = await fetch("/api/flux2Pro/editEnvironment", {
+          method: "POST",
+          body: form,
+        });
+      }
+
+      const data = await respons.json();
+      if(data.length > 0) setSceneUrl(data);
+      setBusyScene(false);
+    } catch (e){
+      setBusyScene(false);
+      console.error(e);
+      setErr("Et problem oppsto ved generering av miljøbilde");
+      throw new Error("Et problem oppsto ved generering av miljøbilde");
+    }
+  }
+
+  /*
+  * Funksjon for request til å plasere valgte produkter i miljøscene.
+  */
+
+  async function placeProductsInScene() {
+    try{
+      setErr("");
+      setBusyGen(true);
+      const form = new FormData();
+      form.append("prompt", String(placementPrompt).trim());
+      form.append("variants", String(variants));
+      form.append("scene", sceneUrl);
+      form.append("productCount", String(selectedProducts.length));    
+      for(let i = 0; i < selectedProducts.length; i++){
+          form.append(`product${i}`, selectedProducts[i].images[selectedProducts[i].selectedImage].href);
+      }
+
+      let respons;
+      if(selectedModel === "gpt-image-1.5"){
+        respons = await fetch("/api/openAi/productInEnvironment", {
+          method: "POST",
+          body: form,
+        })
+      } else {
+        respons = await fetch("/api/flux2Pro/productInEnvironment", {
+          method: "POST",
+          body: form,
+        })
+      }
+
+      const data = await respons.json();
+      if(data.length > 0){
+        setResultDataUrls(data);
+        setSelectedVariant(0);
+      }
+      setBusyGen(false);
+    } catch (e){
+      setBusyGen(false);
+      console.error(e);
+      setErr("Et problem oppsto ved generering av bilde");
+      throw new Error("Et problem oppsto ved generering av bilde");
+    }
+  }
+  /*
+  * Funksjon for sending av request for forslag til produkt plasering fra GPT 5.4.
+  */
+  
+  async function getPlacementSuggestion(){     
+    try{
+      setErr("");
+      setBusyPlacement(true);
+      const productSummary = buildProductSummary();
+
+      const respons = await fetch("/api/openAi/placementSuggestion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          selectedModel,
+          scenePrompt,
+          productSummary,
+        }),
+      });
+
+      const data = await respons.json();
+      if(data.length > 0){
+        setPlacementPrompt(data);
+      }      
+      setBusyPlacement(false);
+
+    } catch (e){
+      setBusyPlacement(false);
+      console.error(e);
+      setErr("Henting av plasserings forslag feilet!");
+      throw new Error("Henting av plasserings forslag feilet!");
+    }
+  }
+
+  /*
+  * Funksjon for sammensetting av produkt sammendrag
+  */
+
+  function buildProductSummary(): string{
+    const text: string[] = [];
+    selectedProducts.forEach((p, index) => {
+      const role = index === 0 ? "1 - HOVEDPRODUKT (skal prioriteres)" : `${index + 1} - sekundær`;
+      text.push(`${role}: produktid: ${p.productId}, produktnavn fra database: ${p.name?.trim()}, link til produktbilde: ${p.images[p.selectedImage].href}`)
+    });
+    return text.join("\n\n");
+  }
+
+  /*
+  * Funksjon for oppdatering av variabel for valgt bilde for produkter.
+  */
+
+  function changeSelectedImage( productIndex: number, imageIndex: number ){
+    selectedProducts[productIndex].selectedImage = imageIndex;
+  }
 
   /*
    * Fjerner et produkt fra listen over valgte produkter.
-   * Frigjør objektURL hvis det er en opplastet fil.
    */
 
-  function removeProduct(id: string) {
-    setSelectedProducts((prev) => {
-      const p = prev.find((x) => x.id === id);
-      if (p?.kind === "last-opp") URL.revokeObjectURL(p.previewUrl);
-      return prev.filter((x) => x.id !== id);
-    });
+  function removeProduct(id: number) {
+    try{
+      setErr("");
+      const newArray = selectedProducts.filter(item => item.productId !== id);
+      setSelectedProducts(newArray);
+    } catch (e){
+      console.error(e);
+      setErr("En feil oppsto ved fjering av produkt");
+      throw new Error("En feil oppsto ved fjering av produkt");
+    }
   }
 
   /*
@@ -312,33 +291,24 @@ const loadSceneForTemplate = async (tid: string) => {
    * Validerer grensene slik at produktet ikke flyttes ut av listen.
    */
 
-  function moveProduct(id: string, dir: -1 | 1) {
-    setSelectedProducts((prev) => {
-      const idx = prev.findIndex((p) => p.id === id);
-      if (idx < 0) return prev;
-      const nextIdx = idx + dir;
-      if (nextIdx < 0 || nextIdx >= prev.length) return prev;
-      const copy = [...prev];
-      const [item] = copy.splice(idx, 1);
-      copy.splice(nextIdx, 0, item);
-      return copy;
-    });
-  }
-
-  /*
-   * Setter et produkt som hovedprodukt ved å flytte det til første posisjon i listen.
-   * Hovedproduktet får spesiell behandling ved bildegenering.
-   */
-
-  function setMain(id: string) {
-    setSelectedProducts((prev) => {
-      const idx = prev.findIndex((p) => p.id === id);
-      if (idx <= 0) return prev;
-      const copy = [...prev];
-      const [item] = copy.splice(idx, 1);
-      copy.unshift(item);
-      return copy;
-    });
+  function moveProduct(id: number, dir: -1 | 1) {
+    try{
+      setErr("");
+      setSelectedProducts((prev) => {
+        const idx = prev.findIndex((p) => p.productId === id);
+        if (idx < 0) return prev;
+        const nextIdx = idx + dir;
+        if (nextIdx < 0 || nextIdx >= prev.length) return prev;
+        const copy = [...prev];
+        const [item] = copy.splice(idx, 1);
+        copy.splice(nextIdx, 0, item);
+        return copy;
+      });
+    } catch (e){
+      console.error(e);
+      setErr("En feil oppsto ved flytting av produktet");
+      throw new Error("En feil oppsto ved flytting av produktet");
+    }
   }
 
   /*
@@ -350,37 +320,26 @@ const loadSceneForTemplate = async (tid: string) => {
    */
 
   async function addProductId() {
-    try {
+    try{
       setErr("");
-      const pid = productIdInput.trim();
-      if (!pid) throw new Error("Skriv produktId");
+      const produktId = productIdInput.trim(); 
+      if(!produktId) throw new Error("Skriv produktId");
       if (selectedProducts.length >= 4) throw new Error("Maks 4 produkter");
 
       // Slå opp produkt via API
-      const res = await fetch(
-        `/api/products/by-id?productId=${encodeURIComponent(pid)}`,
-      );
-      const json = (await res.json()) as ProductLookupResponse;
-      if (!res.ok) throw new Error(json.error || "produkt henting feilet");
-      if (!json.found) throw new Error("Fant ikke produkt");
+      const response =  await fetch(`/api/products/by-id?productId=${encodeURIComponent(produktId)}`);      
+      const data = await response.json();
 
-      // Legg til produkt i liste
-      setSelectedProducts((prev) => [
-        ...prev,
-        {
-          kind: "produktId",
-          id: uuid(),
-          productId: pid,
-          name: json.product?.name,
-          bestHref: json.bestHref ?? undefined,
-        },
-      ]);
+      if (!response.ok) throw new Error(data.error || "produkt henting feilet");
 
-      // Tøm input-feltet etter vellykket tillegg
+      setSelectedProducts((prev) =>  [...prev, data])
+
       setProductIdInput("");
-    } catch (e) {
-      setErr(toErrorMessage(e));
-    }
+    } catch (e){
+      console.error(e);
+      setErr("En feil oppsto når produktet skulle legges til");
+      throw new Error("En feil oppsto når produktet skulle legges til");
+    }  
   }
 
   /*
@@ -391,7 +350,7 @@ const loadSceneForTemplate = async (tid: string) => {
    * Opprettet forhåndsvisninger for hver fil vises i brukergrensesnittet.
    */
 
-  function addUploads(files: FileList | null) {
+  /*function addUploads(files: FileList | null) {
     if (!files) return;
     setErr("");
     const incoming = Array.from(files);
@@ -410,134 +369,7 @@ const loadSceneForTemplate = async (tid: string) => {
       }));
       return [...prev, ...mapped];
     });
-  }
-
-  /*
-   * Regenererer scenen for soft templates ved å kalle på API for å hente en helt ny scene.
-   * Brukes når bruker ønsker en annen variant av samme template-stil.
-   */
-
-  async function regenerateScene() {
-    try {
-      if (!selectedTemplate) throw new Error("Ingen template valgt");
-      if (selectedTemplate.type !== "soft")
-        throw new Error("Regenerering gjelder kun soft templates");
-      await loadSceneForTemplate(templateId);
-    } catch (e) {
-      setErr(toErrorMessage(e));
-    }
-  }
-
-  /*
-   * Finjusterer en eksisterende scene basert på brukerens tekstuelle instruksjon.
-   * Sender scenebildet og instruksjonen til API som modifiserer bildet accordingly.
-   */
-
-  async function refineScene() {
-    try {
-      setErr("");
-      if (!sceneBlob) throw new Error("Ingen scene å endre");
-      if (!sceneFixPrompt.trim()) throw new Error("Skriv hva du vil endre");
-
-      setBusyScene(true);
-
-      // Opprett FormData med scene og instruksjon
-      const fd = new FormData();
-      fd.append("instruction", sceneFixPrompt.trim());
-      fd.append(
-        "scene",
-        new File([sceneBlob], "scene.png", {
-          type: sceneBlob.type || "image/png",
-        }),
-      );
-
-      // Send til API for scene-modifisering
-      const res = await fetch("/api/scene-refine", {
-        method: "POST",
-        body: fd,
-      });
-      if (!res.ok) throw new Error(await readErrorMessage(res));
-
-      // Sett den modifiserte scenen
-      const blob = await res.blob();
-      setSceneFromBlob(blob);
-
-      // Tøm instruksjonsfelt etter vellykket operasjon
-      setSceneFixPrompt("");
-    } catch (e) {
-      setErr(toErrorMessage(e));
-    } finally {
-      setBusyScene(false);
-    }
-  }
-
-  /*
-   * Genererer det endelige bildet med produkter plassert i scenen.
-   * Validerer at:
-   * - Scene er lastet
-   * - 1-4 produkter er valgt
-   * - Plasseringsinstruksjon er gitt
-   * Sender alle nødvendige data til API for bildegenering.
-   */
-
-  async function generate() {
-    try {
-      setErr("");
-      setResultDataUrls([]);
-      setSelectedVariant(0);
-
-      // Valider inputs
-      if (!sceneBlob) throw new Error("Miljøbilde er ikke klart ennå");
-      if (selectedProducts.length < 1 || selectedProducts.length > 4)
-        throw new Error("Velg 1–4 produkter");
-      if (!placementPrompt.trim()) throw new Error("Skriv en placement prompt");
-
-      setBusyGen(true);
-
-      // Opprett ordnet referanseliste over produkter
-      const orderedRefs = selectedProducts.map((p) =>
-        p.kind === "produktId"
-          ? ({ kind: "produktId", value: p.productId } as const)
-          : ({ kind: "last-opp", value: p.file.name } as const),
-      );
-
-      // Filtrer ut kun opplastede produkter
-      const uploads = selectedProducts.filter(
-        (p): p is Extract<SelectedProduct, { kind: "last-opp" }> =>
-          p.kind === "last-opp",
-      );
-
-      // Opprett FormData for API-kall
-      const fd = new FormData();
-      fd.append("placementPrompt", placementPrompt);
-      fd.append("variants", String(variants));
-      fd.append("orderedRefs", JSON.stringify(orderedRefs));
-
-      // Legg ved scenebildet
-      fd.append(
-        "scene",
-        new File([sceneBlob], "scene.png", {
-          type: sceneBlob.type || "image/png",
-        }),
-      );
-
-      // Legg ved alle opplastede produktfiler
-      uploads.forEach((u) => fd.append("produkter", u.file));
-
-      // Send til API for generering
-      const res = await fetch("/api/generate", { method: "POST", body: fd });
-      const json = (await res.json()) as GenerateResponse;
-      if (!res.ok) throw new Error(json.error || "generering feilet");
-
-      // Lagre genererte resultater
-      setResultDataUrls(json.resultDataUrls ?? []);
-      setSelectedVariant(0);
-    } catch (e) {
-      setErr(toErrorMessage(e));
-    } finally {
-      setBusyGen(false);
-    }
-  }
+  }*/
 
   /*
    * Returnerer JSX for hele dashbord-siden.
@@ -547,7 +379,6 @@ const loadSceneForTemplate = async (tid: string) => {
   return (
     <>
       <DashboardNav darkMode={darkMode} onDarkModeChange={setDarkMode} />
-
       <main className={styles.main}>
         <h1>Miljøbilde + produktplassering</h1>
 
@@ -557,88 +388,10 @@ const loadSceneForTemplate = async (tid: string) => {
               darkMode ? styles.dark : styles.light
             }`}
           >
-            <h2
-              className={`${styles.heading2} ${darkMode ? styles.dark : styles.light}`}
-            >
-              Velg miljø
-            </h2>
-
-            <select
-              value={templateId}
-              onChange={(e) => setTemplateId(e.target.value)}
-              className={`${styles.select} ${darkMode ? styles.dark : styles.light}`}
-            >
-              {/* Hvis listen er tom, vis en placeholder så boksen ikke kollapser */}
-              {templates.length === 0 ? (
-                <option value="">Laster maler...</option>
-              ) : (
-                templates.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.type})
-                  </option>
-                ))
-              )}
-            </select>
-
-            <div className={styles.sceneContainer}>
-              <div className={styles.sceneLabel}>Miljøbilde</div>
-              {busyScene ? (
-                <div className={styles.sceneBusyLoader}>
-                  Laster/genererer...
-                </div>
-              ) : sceneUrl ? (
-                <>
-                  <img
-                    src={sceneUrl}
-                    alt="scene"
-                    className={styles.sceneImage}
-                  />
-
-                  {selectedTemplate?.type === "soft" && (
-                    <>
-                      <button
-                        onClick={regenerateScene}
-                        disabled={busyScene || busyGen}
-                        className={styles.button}
-                      >
-                        Regenerer scene
-                      </button>
-
-                      <div className={styles.sceneContainer}>
-                        <div className={styles.sceneLabel}>
-                          Hva vil du endre i scenen?
-                        </div>
-                        <input
-                          value={sceneFixPrompt}
-                          onChange={(e) => setSceneFixPrompt(e.target.value)}
-                          placeholder='F.eks: "Ta bort dusjen. Behold alt annet uendret."'
-                          className={`${styles.input} ${styles.inputMargin} ${
-                            darkMode ? styles.dark : styles.light
-                          }`}
-                        />
-                        <button
-                          onClick={refineScene}
-                          disabled={
-                            busyScene || busyGen || !sceneFixPrompt.trim()
-                          }
-                          className={styles.button}
-                        >
-                          Fiks scene
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </>
-              ) : (
-                <div className={styles.sceneEmpty}>Ingen scene</div>
-              )}
-            </div>
-
-            <h2
-              className={`${styles.heading2Large} ${styles.heading2} ${
-                darkMode ? styles.dark : styles.light
-              }`}
-            >
+            <EnvironmentCard templateId={templateId} scenePrompt={scenePrompt} setScenePrompt={setScenePrompt} setTemplateId={setTemplateId} templates={templates} generateScene={generateScene} 
+              darkMode={darkMode} sceneUrl={sceneUrl} busyGen={busyGen} busyScene={busyScene} busyPlacement={busyPlacement} sceneFixPrompt={sceneFixPrompt} setSceneFixPrompt={setSceneFixPrompt} 
+              refineScene={refineScene} selectedModel={selectedModel} setSelectedModel={setSelectedModel}/>
+            <h2>
               Velg 1–4 produkter
             </h2>
             <div
@@ -648,260 +401,29 @@ const loadSceneForTemplate = async (tid: string) => {
             >
               Skriv inn Produktnummer eller ProduktID
             </div>
-
-            <div className={styles.flexContainer}>
-              <input
-                value={productIdInput}
-                onChange={(e) => setProductIdInput(e.target.value)}
-                placeholder="Produktnummer Her..."
-                className={`${styles.input} ${styles.flex1} ${
-                  darkMode ? styles.dark : styles.light
-                }`}
-              />
-              <button
-                onClick={addProductId}
-                disabled={selectedProducts.length >= 4}
-              >
-                Legg til
-              </button>
-            </div>
-
-            <div
-              className={`${styles.flexContainerStart} ${styles.flexContainer}`}
-            >
-              <div
-                className={`${styles.fileListContainer} ${
-                  darkMode ? styles.dark : styles.light
-                } ${
-                  selectedProducts.filter((p) => p.kind === "last-opp").length >
-                  0
-                    ? styles.filled
-                    : styles.empty
-                }`}
-              >
-                {selectedProducts.filter((p) => p.kind === "last-opp")
-                  .length === 0
-                  ? "Velg Fil fra Datamaskin. (Ingen fil valgt)"
-                  : selectedProducts
-                      .filter((p) => p.kind === "last-opp")
-                      .map((p) => (
-                        <div
-                          key={p.id}
-                          className={`${styles.fileItem} ${
-                            darkMode ? styles.dark : styles.light
-                          }`}
-                        >
-                          {p.kind === "last-opp" && p.file.name}
-                        </div>
-                      ))}
-              </div>
-              <label className={styles.fileLabel}>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const input = document.querySelector(
-                      'input[type="file"][data-file-input]',
-                    ) as HTMLInputElement;
-                    input?.click();
-                  }}
-                  className={`${styles.buttonCompact} ${
-                    darkMode
-                      ? styles.buttonCompactDark
-                      : styles.buttonCompactLight
-                  }`}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.classList.add(
-                      darkMode
-                        ? styles.buttonCompactDarkHover
-                        : styles.buttonCompactLightHover,
-                    );
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.classList.remove(
-                      darkMode
-                        ? styles.buttonCompactDarkHover
-                        : styles.buttonCompactLightHover,
-                    );
-                  }}
-                >
-                  Legg til fil
-                </button>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={(e) => addUploads(e.target.files)}
-                  disabled={selectedProducts.length >= 4}
-                  data-file-input
-                  className={styles.fileInput}
-                />
-              </label>
-            </div>
-
+            {/* Valg av produkt */}
+            <SelectproductByIdCard productIdInput={productIdInput} setProductIdInput={setProductIdInput} darkMode={darkMode} addProductId={addProductId} selectedProducts={selectedProducts}/>
+            {/* input av fil */}            
+            {/** Visning av valgte produkter */}
             {selectedProducts.length > 0 && (
               <div
                 className={`${styles.productList} ${
                   darkMode ? styles.dark : styles.light
                 }`}
               >
-                <div className={styles.productGrid}>
-                  {selectedProducts.map((p, idx) => (
-                    <div key={p.id} className={styles.productCard}>
-                      <div className={styles.productCardHeader}>
-                        <div className={styles.productCardLabel}>
-                          {p.kind === "last-opp"
-                            ? idx === 0
-                              ? "Hovedbilde"
-                              : idx === 1
-                                ? "Sekundærbilde"
-                                : idx === 2
-                                  ? "Tredje-bilde"
-                                  : "Fjerde-bilde"
-                            : `${p.productId}${p.name ? ` – ${p.name}` : ""}`}
-                        </div>
-
-                        <div className={styles.productCardButtonGroup}>
-                          <button
-                            onClick={() => moveProduct(p.id, -1)}
-                            disabled={idx === 0}
-                            title="Flytt opp"
-                          >
-                            ↑
-                          </button>
-                          <button
-                            onClick={() => moveProduct(p.id, 1)}
-                            disabled={idx === selectedProducts.length - 1}
-                            title="Flytt ned"
-                          >
-                            ↓
-                          </button>
-                          <button
-                            onClick={() => removeProduct(p.id)}
-                            title="Fjern"
-                          >
-                            X
-                          </button>
-                        </div>
-                      </div>
-
-                      {p.kind === "last-opp" ? (
-                        <img
-                          src={p.previewUrl}
-                          alt="last-opp"
-                          className={styles.productImage}
-                        />
-                      ) : p.bestHref ? (
-                        <img
-                          src={p.bestHref}
-                          alt="dbx"
-                          className={styles.productImage}
-                        />
-                      ) : (
-                        <div className={styles.productNoHref}>
-                          Ingen bestHref
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                {selectedProducts?.map((product, index) => (
+                  <ProductCard key={product.productId} product={product} moveProduct={moveProduct} removeProduct={removeProduct} index={index} selectedProducts={selectedProducts} changeSelectedImage={changeSelectedImage}/>
+                ))}                     
               </div>
             )}
-
-            <h2
-              className={`${styles.heading2Large} ${styles.heading2} ${
-                darkMode ? styles.dark : styles.light
-              }`}
-            >
-              ØNSKET PLASSERING PÅ PRODUKT(ENE)
-            </h2>
-            <textarea
-              value={placementPrompt}
-              onChange={(e) => setPlacementPrompt(e.target.value)}
-              rows={6}
-              placeholder="Eks: Plasser produktet i sentrum av bordet. Orienter det mot venstre. Produktet skal være lettsynlig og dominere komposisjonen."
-              className={`${styles.textarea} ${darkMode ? styles.dark : styles.light}`}
-            />
-
-            <div className={styles.variantsContainer}>
-              <label className={styles.flex1}>
-                <div className={styles.variantsLabel}>Varianter</div>
-                <select
-                  value={variants}
-                  onChange={(e) => setVariants(Number(e.target.value))}
-                  className={`${styles.select} ${darkMode ? styles.dark : styles.light}`}
-                >
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={4}>4</option>
-                  <option value={6}>6</option>
-                  <option value={8}>8</option>
-                </select>
-              </label>
-
-              <button
-                onClick={generate}
-                disabled={busyGen || busyScene}
-                className={`${styles.button} ${styles.flex1} ${styles.flexEnd}`}
-              >
-                {busyGen ? "Genererer..." : "Generer"}
-              </button>
-            </div>
-
+            {/* Plassering av produkter i miljøbilde */}
+            <PlacementCard selectedProducts={selectedProducts} selectedModel={selectedModel} scenePrompt={scenePrompt} getPlacementSuggestion={getPlacementSuggestion} selectedPlacementPreset={selectedPlacementPreset} setSelectedPlacementPreset={setSelectedPlacementPreset} placementPresets={placementPresets} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene}/>      
             {err && <div className={styles.errorMessage}>{err}</div>}
           </section>
-
-          <section
-            className={`${styles.resultSection} ${
-              darkMode ? styles.dark : styles.light
-            }`}
-          >
-            <h2
-              className={`${styles.heading2} ${darkMode ? styles.dark : styles.light}`}
-            >
-              Resultat
-            </h2>
-
-            {resultDataUrls.length === 0 ? (
-              <div className={styles.noResults}>Ingen resultat ennå</div>
-            ) : (
-              <>
-                <img
-                  src={resultDataUrls[selectedVariant]}
-                  alt="selected-result"
-                  className={styles.resultImage}
-                />
-
-                <h3
-                  className={`${styles.heading3} ${
-                    darkMode ? styles.dark : styles.light
-                  }`}
-                >
-                  Velg beste variant
-                </h3>
-                <div className={styles.variantsGrid}>
-                  {resultDataUrls.map((u, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelectedVariant(i)}
-                      className={`${styles.variantButton} ${
-                        i === selectedVariant
-                          ? styles.variantButtonActive
-                          : styles.variantButtonInactive
-                      }`}
-                    >
-                      <img
-                        src={u}
-                        alt={`variant-${i}`}
-                        className={styles.variantImage}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </section>
+          <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>          
         </div>
       </main>
     </>
   );
 }
+

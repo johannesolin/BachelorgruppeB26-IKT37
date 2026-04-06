@@ -5,6 +5,7 @@ import React, { useEffect, useState, FormEvent } from "react";
 import { DashboardNav } from "../navigation/DashboardNav";
 import { getStoredTheme, saveTheme } from "../../lib/theme";
 import styles from "./page.module.css";
+import { Product } from "@/db/types";
 
 /*
  * Typedefinisjon for Product-objektet.
@@ -12,15 +13,7 @@ import styles from "./page.module.css";
  * Bruker [key: string]: any for å støtte dynamiske felter fra API-et.
  */
 
-interface Product {
-  artikkelnummer?: string;
-  productId?: string;
-  name?: string;
-  beskrivelse?: string;
-  pris?: number;
-  images?: string;
-  [key: string]: any;
-}
+
 
 /*
  * Hovedkomponent for produktsiden.
@@ -196,13 +189,13 @@ export default function ProduktSide() {
                   <div className={styles.infoField}>
                     <h3 className={styles.infoLabel}>PRODUCTID</h3>
                     <p className={styles.infoValue}>
-                      {product.productId || product.produktid}
+                      {product.productId || product.productId}
                     </p>
                   </div>
                   <div className={styles.infoField}>
                     <h3 className={styles.infoLabel}>NAME</h3>
                     <p className={styles.infoValue}>
-                      {product.name || product.navn}
+                      {product.name || product.name}
                     </p>
                   </div>
                   <div className={styles.infoField}>

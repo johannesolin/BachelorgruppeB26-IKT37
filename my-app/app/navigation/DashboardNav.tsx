@@ -4,20 +4,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./DashboardNav.module.css";
-
-/*
- * Typedefinisjon for navigasjonselement.
- */
-interface NavItem {
-  icon: string;
-  label: string;
-  path: string; // Sørg for at alle har path for router.push
-}
-
-interface DashboardNavProps {
-  darkMode: boolean;
-  onDarkModeChange?: (isDark: boolean) => void;
-}
+import { DashboardNavProps, NavItem } from "./types";
 
 /*
  * Konstant array med navigasjonselementer flyttet utenfor komponenten (siden den er statisk).
