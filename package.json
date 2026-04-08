@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "@databricks/sql": "^1.13.0"
-  }
-}
