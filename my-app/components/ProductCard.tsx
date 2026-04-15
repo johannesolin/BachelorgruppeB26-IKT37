@@ -3,19 +3,25 @@ import { ProductCardProps } from "@/components/types";
 import { useState } from "react";
 
 export const ProductCard = (props : ProductCardProps) => {
-    const [selectedImage, setSelectedImage] = useState<number>(0);
+    const [selectedImage, setSelectedImage] = useState<number>(props.product.selectedImage);
 
     function reduceSelectedImage(){
         if(selectedImage > 0){
-            setSelectedImage(selectedImage -1);
-            props.changeSelectedImage(props.index, selectedImage);
+            const newIndex = selectedImage - 1;
+            console.log(props.selectedProducts[props.index].selectedImage)
+            setSelectedImage(newIndex);            
+            props.changeSelectedImage(props.index, newIndex);
+            console.log(props.selectedProducts[props.index].selectedImage)
         }
     }
 
     function increaseSelectedImage(){
         if(selectedImage < props.product.images.length-1){
-            setSelectedImage(selectedImage + 1);
-            props.changeSelectedImage(props.index, selectedImage);
+            const newIndex = selectedImage + 1;
+            console.log(props.selectedProducts[props.index].selectedImage)
+            setSelectedImage(newIndex);            
+            props.changeSelectedImage(props.index, newIndex);
+            console.log(props.selectedProducts[props.index].selectedImage)
         }
     }
 
