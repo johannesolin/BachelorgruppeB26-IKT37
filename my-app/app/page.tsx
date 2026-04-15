@@ -12,12 +12,14 @@ import { ProductCard } from "@/components/ProductCard";
 import { PlacementCard } from "@/components/PlacementCard";
 import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
 import { PLACMENT_PRESET } from "@/templates/templatesPlacmentPreset";
+import { EditResultCard } from "@/components/EditResultCard";
 
 /*
  * Hovedkomponent for dashbordet.
  * Håndterer alle aspekter av miljøbilde- og produktplasseringsflyten,
  * inkludert template-valg, scenemanipulasjon, produktvalg og generering av endelige bilder.
  */
+
 
 export default function Page() {
   // State for modell valg
@@ -56,6 +58,9 @@ export default function Page() {
   const [variants, setVariants] = useState<number>(1);
   const [resultDataUrls, setResultDataUrls] = useState<string[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<number>(0);
+
+  // State for redigering slutt bilde
+  const [editResultPrompt, setEditResultPrompt] = useState<string>("");
 
   // State for mørkt/lyst tema
   const [darkMode, setDarkModeState] = useState<boolean>(true);
@@ -100,6 +105,8 @@ export default function Page() {
     try{
       setErr("");
       setBusyScene(true);
+      setEditResultPrompt("");
+      setSceneFixPrompt("");
       const temp = templates.find(temp => temp.id === templateId) as Template;
       const form = new FormData();      
 
@@ -179,6 +186,7 @@ export default function Page() {
     try{
       setErr("");
       setBusyGen(true);
+      setResultDataUrls([]);
       const form = new FormData();
       form.append("prompt", String(placementPrompt).trim());
       form.append("variants", String(variants));
@@ -245,6 +253,50 @@ export default function Page() {
       console.error(e);
       setErr("Henting av plasserings forslag feilet!");
       throw new Error("Henting av plasserings forslag feilet!");
+    }
+  }
+
+  /*
+  * Funksjon for redigering av slutt bilde
+  */
+
+  async function editFinalImage(){
+    try{setErr("");
+      setBusyGen(true);
+
+      const scene = resultDataUrls[selectedVariant];
+
+      const body = JSON.stringify({
+          scene,
+          editResultPrompt,
+      })
+
+      let respons;
+      if(selectedModel === "gpt-image-1.5"){
+        respons = await fetch("/api/openAi/editFinalImage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+        });
+      } else {
+        respons = await fetch("/api/flux2Pro/editFinalImage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body
+        });
+      }
+      const data = await respons.json();
+      if(data.length > 0){
+        setResultDataUrls([data]);
+        setSelectedVariant(0);
+      }
+
+      setBusyGen(false);  
+    } catch (e){
+      setBusyGen(false);
+      console.error(e);
+      setErr("Et problem oppsto ved generering av miljøbilde");
+      throw new Error("Et problem oppsto ved generering av miljøbilde");
     }
   }
 
@@ -420,7 +472,14 @@ export default function Page() {
             <PlacementCard selectedProducts={selectedProducts} selectedModel={selectedModel} scenePrompt={scenePrompt} getPlacementSuggestion={getPlacementSuggestion} selectedPlacementPreset={selectedPlacementPreset} setSelectedPlacementPreset={setSelectedPlacementPreset} placementPresets={placementPresets} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene}/>      
             {err && <div className={styles.errorMessage}>{err}</div>}
           </section>
-          <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>          
+          <section
+            className={`${styles.configSection} ${
+              darkMode ? styles.dark : styles.light
+            }`}
+          >
+            <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>
+            <EditResultCard editResultPrompt={editResultPrompt} setEditResultPrompt={setEditResultPrompt} darkMode={darkMode} resultDataUrls={resultDataUrls} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene} selectedModel={selectedModel} editFinalImage={editFinalImage}/>         
+          </section>
         </div>
       </main>
     </>

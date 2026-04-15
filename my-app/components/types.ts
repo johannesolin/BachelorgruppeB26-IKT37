@@ -62,3 +62,15 @@ export interface SelectProductByIdCardProps {
     addProductId: () => void;
     selectedProducts: Product[];    
 }
+
+export interface EditResultCardProps {
+    darkMode: boolean;
+    editResultPrompt: string;
+    setEditResultPrompt : ( param: string ) => void;
+    busyScene: boolean;
+    busyGen: boolean;
+    busyPlacement: boolean;
+    selectedModel: string;
+    editFinalImage: () => void;
+    resultDataUrls: string[];
+}

@@ -18,11 +18,14 @@ export function PlacementCard( props: PlacementCardProps ){
               ØNSKET PLASSERING PÅ PRODUKT(ENE)
             </h2>
             <p>Velg evt. preset, rediger tekst, eller hent forslag automatisk.</p>
-            <select value={props.selectedPlacementPreset} onChange={e => changePlacementPreset(e.target.value)}>
-              <option value="">- Velg mal -</option>
-              {props.placementPresets?.map((placement) => (
-                <option key={placement.id} value={placement.id}>{placement.label}</option>
-              ))}
+            <select 
+              value={props.selectedPlacementPreset} 
+              onChange={e => changePlacementPreset(e.target.value)} 
+              className={`${styles.select} ${props.darkMode ? styles.dark : styles.light}`}>
+                <option value="">- Velg mal -</option>
+                {props.placementPresets?.map((placement) => (
+                  <option key={placement.id} value={placement.id}>{placement.label}</option>
+                ))}
             </select>
             <textarea
               value={props.placementPrompt}
