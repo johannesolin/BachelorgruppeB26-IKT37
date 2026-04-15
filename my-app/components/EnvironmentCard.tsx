@@ -10,7 +10,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
   
     return(
         <>
-        <h2
+          <h2
               className={`${styles.heading2} ${props.darkMode ? styles.dark : styles.light}`}
             >
               Velg miljø og modell
@@ -72,7 +72,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
                     />
                     <button
                         onClick={props.refineScene}
-                        disabled={props.busyGen || !props.sceneFixPrompt.trim()}
+                        disabled={props.busyGen || props.busyPlacement || props.busyScene || !props.sceneFixPrompt.trim()}
                         className={styles.button}
                     >
                         Fiks scene
@@ -82,13 +82,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
               ) : (
                 <div className={styles.sceneEmpty}>Ingen scene</div>
               )}
-            </div>
-
-            <h2
-              className={`${styles.heading2Large} ${styles.heading2} ${
-                props.darkMode ? styles.dark : styles.light
-              }`}
-            ></h2>
+            </div>            
         </>
     );
 }
