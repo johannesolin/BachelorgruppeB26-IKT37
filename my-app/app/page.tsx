@@ -451,7 +451,7 @@ export default function Page() {
                 darkMode ? styles.dark : styles.light
               }`}
             >
-              Skriv inn Produktnummer eller ProduktID
+              Skriv inn Produkt ID
             </div>
             {/* Valg av produkt */}
             <SelectproductByIdCard productIdInput={productIdInput} setProductIdInput={setProductIdInput} darkMode={darkMode} addProductId={addProductId} selectedProducts={selectedProducts}/>
@@ -459,12 +459,12 @@ export default function Page() {
             {/** Visning av valgte produkter */}
             {selectedProducts.length > 0 && (
               <div
-                className={`${styles.productList} ${
+                className={`${styles.productList} ${styles.productGrid} ${
                   darkMode ? styles.dark : styles.light
                 }`}
               >
                 {selectedProducts?.map((product, index) => (
-                  <ProductCard key={product.productId} product={product} moveProduct={moveProduct} removeProduct={removeProduct} index={index} selectedProducts={selectedProducts} changeSelectedImage={changeSelectedImage}/>
+                  <ProductCard darkMode={darkMode} key={product.productId} product={product} moveProduct={moveProduct} removeProduct={removeProduct} index={index} selectedProducts={selectedProducts} changeSelectedImage={changeSelectedImage}/>
                 ))}                     
               </div>
             )}

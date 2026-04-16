@@ -24,7 +24,6 @@ export const ResultsCard = (props: ResultsCardProps) => {
                   alt="selected-result"
                   className={styles.resultImage}
                 />
-
                 <h3
                   className={`${styles.heading3} ${
                     props.darkMode ? styles.dark : styles.light
