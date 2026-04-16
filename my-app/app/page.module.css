@@ -495,22 +495,6 @@
 }
 
 /*
- * Tema-stil for produktliste i mørk modus.
- */
-
-.productList.dark {
-  border: 1px solid #444444;
-}
-
-/*
- * Tema-stil for produktliste i lyst modus.
- */
-
-.productList.light {
-  border: 1px solid #d5d5d5;
-}
-
-/*
  * Grid-layout for produktkort innenfor produktlisten.
  * Enkelt kolonne med jamnl avstand.
  */

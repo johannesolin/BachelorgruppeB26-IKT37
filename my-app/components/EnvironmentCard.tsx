@@ -6,6 +6,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
   function changeTemplate( e: string){
     props.setTemplateId(e);
     props.setScenePrompt(props.templates.find(temp => temp.id === e)?.scenePrompt as string);
+  
   }
   
     return(
@@ -21,7 +22,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
               className={`${styles.select} ${props.darkMode ? styles.dark : styles.light}`}
               disabled={props.busyGen}
             >Velg Modell
-              <option value="" hidden>- Velg Modell -</option>
+              <option value="">- Velg Modell -</option>
               <option value="gpt-image-1.5" key="gpt-image-1.5">GPT-Image-1.5</option>
               <option value="flux-2-pro" key="flux-2-pro">FLUX-2-PRO</option>
             </select>
