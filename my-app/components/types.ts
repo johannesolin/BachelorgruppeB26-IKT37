@@ -8,6 +8,7 @@ export interface ProductCardProps {
     moveProduct: (param: number, param2: -1 | 1 ) => void;
     removeProduct: (param: number) => void;
     changeSelectedImage: (param: number, param2: number) => void;
+    darkMode: boolean;
 }
 
 export interface EnvironmentCardProps {
