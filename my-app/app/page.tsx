@@ -121,11 +121,15 @@ export default function Page() {
           method: "POST",
           body: form,
         });
-      } else {
+      } else if (selectedModel === "flux-2-pro") {
         respons = await fetch("/api/flux2Pro/generateEnvironment", {
           method: "POST",
           body: form,
         });
+      } else {
+        setBusyScene(false);
+        setErr("Velg modell for generering av av miljøbilde")
+        throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
 
       const data = await respons.json();    
@@ -160,11 +164,15 @@ export default function Page() {
           method: "POST",
           body: form,
         });
-      } else {
+      } else if (selectedModel === "flux-2-pro") {
         respons = await fetch("/api/flux2Pro/editEnvironment", {
           method: "POST",
           body: form,
         });
+      } else {
+        setBusyScene(false);
+        setErr("Velg modell for generering av av miljøbilde")
+        throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
 
       const data = await respons.json();
@@ -202,11 +210,15 @@ export default function Page() {
           method: "POST",
           body: form,
         })
-      } else {
+      } else if (selectedModel === "flux-2-pro") {
         respons = await fetch("/api/flux2Pro/productInEnvironment", {
           method: "POST",
           body: form,
         })
+      } else {
+        setBusyGen(false);
+        setErr("Velg modell for generering av av miljøbilde")
+        throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
 
       const data = await respons.json();
@@ -278,13 +290,18 @@ export default function Page() {
           headers: { "Content-Type": "application/json" },
           body,
         });
-      } else {
+      } else if (selectedModel === "flux-2-pro") {
         respons = await fetch("/api/flux2Pro/editFinalImage", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body
         });
+      } else {
+        setBusyGen(false);
+        setErr("Velg modell for generering av av miljøbilde")
+        throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
+
       const data = await respons.json();
       if(data.length > 0){
         setResultDataUrls([data]);
@@ -393,7 +410,6 @@ export default function Page() {
       throw new Error("En feil oppsto når produktet skulle legges til");
     }  
   }
-
   /*
    * Legger til produkter basert på fileopplastinger fra bruker.
    * Validerer at:
