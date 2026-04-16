@@ -6,16 +6,14 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
   function changeTemplate( e: string){
     props.setTemplateId(e);
     props.setScenePrompt(props.templates.find(temp => temp.id === e)?.scenePrompt as string);
-  
+    props.setSceneFixPrompt("");  
   }
   
     return(
         <>
-          <h2
-              className={`${styles.heading2} ${props.darkMode ? styles.dark : styles.light}`}
-            >
+          <h2 className={`${styles.heading2} ${props.darkMode ? styles.dark : styles.light}`}>
               Velg miljø og modell
-            </h2>
+          </h2>          
             <select 
               value={props.selectedModel} 
               onChange={(e) => props.setSelectedModel(e.target.value as "gpt-image-1.5" | "flux-2-pro" | "")} 

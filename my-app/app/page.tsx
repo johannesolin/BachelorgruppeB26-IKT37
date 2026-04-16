@@ -5,13 +5,12 @@ import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
 import { Product } from "@/db/types";
 import { templatesArray } from "@/templates/templates";
-import { PlacementPreset, Template } from "@/templates/types";
+import { Template } from "@/templates/types";
 import { EnvironmentCard } from "@/components/EnvironmentCard";
 import { ResultsCard } from "@/components/ResultsCard";
 import { ProductCard } from "@/components/ProductCard";
 import { PlacementCard } from "@/components/PlacementCard";
 import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
-import { PLACMENT_PRESET } from "@/templates/templatesPlacmentPreset";
 import { EditResultCard } from "@/components/EditResultCard";
 
 /*
@@ -51,8 +50,6 @@ export default function Page() {
 
   // State for plasseringsinstruksjoner
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
-  const [selectedPlacementPreset, setSelectedPlacementPreset] = useState<string>("");
-  const [placementPresets, setPlacementPresets] = useState<PlacementPreset[]>(PLACMENT_PRESET);
 
   // State for generering av resultater
   const [variants, setVariants] = useState<number>(1);
@@ -95,7 +92,15 @@ export default function Page() {
     } else {
       document.documentElement.style.colorScheme = "light";
     }
-  }, [darkMode]);  
+  }, [darkMode]);
+  
+  /*
+   * Funksjon for hard refresh av applikasjonen.
+   */
+
+  function reset(){    
+    window.location.reload();
+  }
 
   /*
    * Funksjon for å sende en request for generering av miljøscene basert på templats.
@@ -448,8 +453,7 @@ export default function Page() {
     <>
       <DashboardNav darkMode={darkMode} onDarkModeChange={setDarkMode} />
       <main className={styles.main}>
-        <h1>Miljøbilde + produktplassering</h1>
-
+        <h1>Miljøbilde + produktplassering</h1>     
         <div className={styles.Miljøbilde}>
           <section
             className={`${styles.configSection} ${
@@ -485,7 +489,7 @@ export default function Page() {
               </div>
             )}
             {/* Plassering av produkter i miljøbilde */}
-            <PlacementCard selectedProducts={selectedProducts} selectedModel={selectedModel} scenePrompt={scenePrompt} getPlacementSuggestion={getPlacementSuggestion} selectedPlacementPreset={selectedPlacementPreset} setSelectedPlacementPreset={setSelectedPlacementPreset} placementPresets={placementPresets} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene}/>      
+            <PlacementCard selectedProducts={selectedProducts} selectedModel={selectedModel} scenePrompt={scenePrompt} getPlacementSuggestion={getPlacementSuggestion} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene}/>      
             {err && <div className={styles.errorMessage}>{err}</div>}
           </section>
           <section
@@ -496,6 +500,7 @@ export default function Page() {
             <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>
             <EditResultCard editResultPrompt={editResultPrompt} setEditResultPrompt={setEditResultPrompt} darkMode={darkMode} resultDataUrls={resultDataUrls} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene} selectedModel={selectedModel} editFinalImage={editFinalImage}/>         
           </section>
+          <button onClick={reset}>Tøm alle input og resultater</button>
         </div>
       </main>
     </>

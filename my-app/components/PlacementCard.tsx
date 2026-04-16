@@ -1,14 +1,8 @@
-import { PlacementPreset } from "@/templates/types";
 import styles from "../app/page.module.css";
 import { PlacementCardProps } from "./types";
 
 export function PlacementCard( props: PlacementCardProps ){
-  function changePlacementPreset( id: string ){
-     const temp = props.placementPresets.find(temp => temp.id === id) as PlacementPreset;
-     props.setSelectedPlacementPreset(id);
-     props.setPlacementPrompt(id === "" ? "" : temp.text);    
-  }
-    return (
+  return (
         <>
           <h2 className={`${styles.heading2Large} ${styles.heading2} ${props.darkMode ? styles.dark : styles.light}`}>
             ØNSKET PLASSERING PÅ PRODUKT(ENE)

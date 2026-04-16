@@ -1,4 +1,4 @@
-import { PlacementPreset, Template } from "@/templates/types";
+import { Template } from "@/templates/types";
 import { Product } from "../db/types";
 
 export interface ProductCardProps {
@@ -49,10 +49,7 @@ export interface PlacementCardProps {
     busyPlacement: boolean;
     selectedProducts: Product[];
     selectedModel: "gpt-image-1.5" | "flux-2-pro" | "";
-    scenePrompt: string;
-    placementPresets: PlacementPreset[];
-    selectedPlacementPreset: string;
-    setSelectedPlacementPreset: ( param: string ) => void;
+    scenePrompt: string;    
     getPlacementSuggestion: () => void;
 }
 
