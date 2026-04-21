@@ -2,18 +2,10 @@ import { Template } from "@/templates/types"
 
 export const templatesArray: Template[] = [
 {
-  "id": "soft_bad_v1",
-  "name": "Baderom ",
-  "type": "soft",
-  "scenePrompt": "Moderne skandinavisk bad, ren komposisjon, tom benkeplate egnet for plassering av produkter, mykt dagslys fra venstre, fotorealistisk, realistiske skygger.",
-  "size": "1536x1024",
-  "quality": "high"
-},
-{
   "id": "soft_hage_v1",
   "name": "Uteplass/terasse ",
   "type": "soft",
-  "scenePrompt": "Skandinavisk utendørsterrasse, ingen møbler eller dekorasjoner, naturlig dagslys, fotorealistisk, realistiske skygger, minimalt med rekvisitter.",
+  "scenePrompt": "Skandinavisk utendørsterrasse med steinheller, tom overflate på terrassen, naturlig dagslys og realistiske skygger, fotorealistisk.",
   "size": "1536x1024",
   "quality": "high"
 },
@@ -26,18 +18,10 @@ export const templatesArray: Template[] = [
   "quality": "high"
 },
 {
-  "id": "soft_kitchen_v1",
-  "name": "Kjøkken ",
-  "type": "soft",
-  "scenePrompt": "Modern Scandinavian kitchen, clean composition, empty countertop area, soft daylight from left, photorealistic, realistic shadows.",
-  "size": "1536x1024",
-  "quality": "high"
-},
-{
   "id": "soft_stue_v1",
   "name": "Stue ",
   "type": "soft",
-  "scenePrompt": "Moderne skandinavisk stue, rent salongbord eller skjenk med tom plass til produkter, mykt naturlig dagslys, fotorealistiske, realistiske skygger, minimalt med rekvisitter.",
+  "scenePrompt": "Moderne stue med lenestol og sidebord, overflater skal være tomme, naturlig dagslys, realistisk foto, realistiske skygger.",
   "size": "1536x1024",
   "quality": "high"
 }]

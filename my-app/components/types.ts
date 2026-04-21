@@ -1,4 +1,4 @@
-import { PlacementPreset, Template } from "@/templates/types";
+import { Template } from "@/templates/types";
 import { Product } from "../db/types";
 
 export interface ProductCardProps {
@@ -8,6 +8,7 @@ export interface ProductCardProps {
     moveProduct: (param: number, param2: -1 | 1 ) => void;
     removeProduct: (param: number) => void;
     changeSelectedImage: (param: number, param2: number) => void;
+    darkMode: boolean;
 }
 
 export interface EnvironmentCardProps {
@@ -48,10 +49,7 @@ export interface PlacementCardProps {
     busyPlacement: boolean;
     selectedProducts: Product[];
     selectedModel: "gpt-image-1.5" | "flux-2-pro" | "";
-    scenePrompt: string;
-    placementPresets: PlacementPreset[];
-    selectedPlacementPreset: string;
-    setSelectedPlacementPreset: ( param: string ) => void;
+    scenePrompt: string;    
     getPlacementSuggestion: () => void;
 }
 
@@ -61,4 +59,16 @@ export interface SelectProductByIdCardProps {
     darkMode: boolean;
     addProductId: () => void;
     selectedProducts: Product[];    
+}
+
+export interface EditResultCardProps {
+    darkMode: boolean;
+    editResultPrompt: string;
+    setEditResultPrompt : ( param: string ) => void;
+    busyScene: boolean;
+    busyGen: boolean;
+    busyPlacement: boolean;
+    selectedModel: string;
+    editFinalImage: () => void;
+    resultDataUrls: string[];
 }

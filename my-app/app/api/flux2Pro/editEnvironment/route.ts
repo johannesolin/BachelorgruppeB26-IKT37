@@ -19,6 +19,7 @@ export async function POST( req: Request){
                 prompt: prompt,
                 width,
                 height,
+                seed: Math.floor(Math.random() * 10000),
                 disable_pup: true,
                 output_format: "jpeg",
                 input_image: sceneBase64,

@@ -5,19 +5,20 @@ import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
 import { Product } from "@/db/types";
 import { templatesArray } from "@/templates/templates";
-import { PlacementPreset, Template } from "@/templates/types";
+import { Template } from "@/templates/types";
 import { EnvironmentCard } from "@/components/EnvironmentCard";
 import { ResultsCard } from "@/components/ResultsCard";
 import { ProductCard } from "@/components/ProductCard";
 import { PlacementCard } from "@/components/PlacementCard";
 import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
-import { PLACMENT_PRESET } from "@/templates/templatesPlacmentPreset";
+import { EditResultCard } from "@/components/EditResultCard";
 
 /*
  * Hovedkomponent for dashbordet.
  * Håndterer alle aspekter av miljøbilde- og produktplasseringsflyten,
  * inkludert template-valg, scenemanipulasjon, produktvalg og generering av endelige bilder.
  */
+
 
 export default function Page() {
   // State for modell valg
@@ -49,13 +50,14 @@ export default function Page() {
 
   // State for plasseringsinstruksjoner
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
-  const [selectedPlacementPreset, setSelectedPlacementPreset] = useState<string>("");
-  const [placementPresets, setPlacementPresets] = useState<PlacementPreset[]>(PLACMENT_PRESET);
 
   // State for generering av resultater
   const [variants, setVariants] = useState<number>(1);
   const [resultDataUrls, setResultDataUrls] = useState<string[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<number>(0);
+
+  // State for redigering slutt bilde
+  const [editResultPrompt, setEditResultPrompt] = useState<string>("");
 
   // State for mørkt/lyst tema
   const [darkMode, setDarkModeState] = useState<boolean>(true);
@@ -90,7 +92,15 @@ export default function Page() {
     } else {
       document.documentElement.style.colorScheme = "light";
     }
-  }, [darkMode]);  
+  }, [darkMode]);
+  
+  /*
+   * Funksjon for hard refresh av applikasjonen.
+   */
+
+  function reset(){    
+    window.location.reload();
+  }
 
   /*
    * Funksjon for å sende en request for generering av miljøscene basert på templats.
@@ -100,6 +110,8 @@ export default function Page() {
     try{
       setErr("");
       setBusyScene(true);
+      setEditResultPrompt("");
+      setSceneFixPrompt("");
       const temp = templates.find(temp => temp.id === templateId) as Template;
       const form = new FormData();      
 
@@ -114,11 +126,15 @@ export default function Page() {
           method: "POST",
           body: form,
         });
-      } else {
+      } else if (selectedModel === "flux-2-pro") {
         respons = await fetch("/api/flux2Pro/generateEnvironment", {
           method: "POST",
           body: form,
         });
+      } else {
+        setBusyScene(false);
+        setErr("Velg modell for generering av av miljøbilde")
+        throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
 
       const data = await respons.json();    
@@ -153,11 +169,15 @@ export default function Page() {
           method: "POST",
           body: form,
         });
-      } else {
+      } else if (selectedModel === "flux-2-pro") {
         respons = await fetch("/api/flux2Pro/editEnvironment", {
           method: "POST",
           body: form,
         });
+      } else {
+        setBusyScene(false);
+        setErr("Velg modell for generering av av miljøbilde")
+        throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
 
       const data = await respons.json();
@@ -179,6 +199,7 @@ export default function Page() {
     try{
       setErr("");
       setBusyGen(true);
+      setResultDataUrls([]);
       const form = new FormData();
       form.append("prompt", String(placementPrompt).trim());
       form.append("variants", String(variants));
@@ -194,11 +215,15 @@ export default function Page() {
           method: "POST",
           body: form,
         })
-      } else {
+      } else if (selectedModel === "flux-2-pro") {
         respons = await fetch("/api/flux2Pro/productInEnvironment", {
           method: "POST",
           body: form,
         })
+      } else {
+        setBusyGen(false);
+        setErr("Velg modell for generering av av miljøbilde")
+        throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
 
       const data = await respons.json();
@@ -245,6 +270,55 @@ export default function Page() {
       console.error(e);
       setErr("Henting av plasserings forslag feilet!");
       throw new Error("Henting av plasserings forslag feilet!");
+    }
+  }
+
+  /*
+  * Funksjon for redigering av slutt bilde
+  */
+
+  async function editFinalImage(){
+    try{setErr("");
+      setBusyGen(true);
+
+      const scene = resultDataUrls[selectedVariant];
+
+      const body = JSON.stringify({
+          scene,
+          editResultPrompt,
+      })
+
+      let respons;
+      if(selectedModel === "gpt-image-1.5"){
+        respons = await fetch("/api/openAi/editFinalImage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+        });
+      } else if (selectedModel === "flux-2-pro") {
+        respons = await fetch("/api/flux2Pro/editFinalImage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body
+        });
+      } else {
+        setBusyGen(false);
+        setErr("Velg modell for generering av av miljøbilde")
+        throw new Error("Et problem oppsto ved generering av miljøbilde");
+      }
+
+      const data = await respons.json();
+      if(data.length > 0){
+        setResultDataUrls([data]);
+        setSelectedVariant(0);
+      }
+
+      setBusyGen(false);  
+    } catch (e){
+      setBusyGen(false);
+      console.error(e);
+      setErr("Et problem oppsto ved generering av miljøbilde");
+      throw new Error("Et problem oppsto ved generering av miljøbilde");
     }
   }
 
@@ -341,7 +415,6 @@ export default function Page() {
       throw new Error("En feil oppsto når produktet skulle legges til");
     }  
   }
-
   /*
    * Legger til produkter basert på fileopplastinger fra bruker.
    * Validerer at:
@@ -380,8 +453,7 @@ export default function Page() {
     <>
       <DashboardNav darkMode={darkMode} onDarkModeChange={setDarkMode} />
       <main className={styles.main}>
-        <h1>Miljøbilde + produktplassering</h1>
-
+        <h1>Miljøbilde + produktplassering</h1>     
         <div className={styles.Miljøbilde}>
           <section
             className={`${styles.configSection} ${
@@ -399,7 +471,7 @@ export default function Page() {
                 darkMode ? styles.dark : styles.light
               }`}
             >
-              Skriv inn Produktnummer eller ProduktID
+              Skriv inn Produkt ID
             </div>
             {/* Valg av produkt */}
             <SelectproductByIdCard productIdInput={productIdInput} setProductIdInput={setProductIdInput} darkMode={darkMode} addProductId={addProductId} selectedProducts={selectedProducts}/>
@@ -407,20 +479,28 @@ export default function Page() {
             {/** Visning av valgte produkter */}
             {selectedProducts.length > 0 && (
               <div
-                className={`${styles.productList} ${
+                className={`${styles.productList} ${styles.productGrid} ${
                   darkMode ? styles.dark : styles.light
                 }`}
               >
                 {selectedProducts?.map((product, index) => (
-                  <ProductCard key={product.productId} product={product} moveProduct={moveProduct} removeProduct={removeProduct} index={index} selectedProducts={selectedProducts} changeSelectedImage={changeSelectedImage}/>
+                  <ProductCard darkMode={darkMode} key={product.productId} product={product} moveProduct={moveProduct} removeProduct={removeProduct} index={index} selectedProducts={selectedProducts} changeSelectedImage={changeSelectedImage}/>
                 ))}                     
               </div>
             )}
             {/* Plassering av produkter i miljøbilde */}
-            <PlacementCard selectedProducts={selectedProducts} selectedModel={selectedModel} scenePrompt={scenePrompt} getPlacementSuggestion={getPlacementSuggestion} selectedPlacementPreset={selectedPlacementPreset} setSelectedPlacementPreset={setSelectedPlacementPreset} placementPresets={placementPresets} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene}/>      
+            <PlacementCard selectedProducts={selectedProducts} selectedModel={selectedModel} scenePrompt={scenePrompt} getPlacementSuggestion={getPlacementSuggestion} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene}/>      
             {err && <div className={styles.errorMessage}>{err}</div>}
           </section>
-          <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>          
+          <section
+            className={`${styles.configSection} ${
+              darkMode ? styles.dark : styles.light
+            }`}
+          >
+            <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>
+            <EditResultCard editResultPrompt={editResultPrompt} setEditResultPrompt={setEditResultPrompt} darkMode={darkMode} resultDataUrls={resultDataUrls} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene} selectedModel={selectedModel} editFinalImage={editFinalImage}/>         
+          </section>
+          <button onClick={reset}>Tøm alle input og resultater</button>
         </div>
       </main>
     </>

@@ -6,22 +6,21 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
   function changeTemplate( e: string){
     props.setTemplateId(e);
     props.setScenePrompt(props.templates.find(temp => temp.id === e)?.scenePrompt as string);
+    props.setSceneFixPrompt("");  
   }
   
     return(
         <>
-        <h2
-              className={`${styles.heading2} ${props.darkMode ? styles.dark : styles.light}`}
-            >
+          <h2 className={`${styles.heading2} ${props.darkMode ? styles.dark : styles.light}`}>
               Velg miljø og modell
-            </h2>
+          </h2>          
             <select 
               value={props.selectedModel} 
               onChange={(e) => props.setSelectedModel(e.target.value as "gpt-image-1.5" | "flux-2-pro" | "")} 
               className={`${styles.select} ${props.darkMode ? styles.dark : styles.light}`}
               disabled={props.busyGen}
             >Velg Modell
-              <option value="" hidden>- Velg Modell -</option>
+              <option value="">- Velg Modell -</option>
               <option value="gpt-image-1.5" key="gpt-image-1.5">GPT-Image-1.5</option>
               <option value="flux-2-pro" key="flux-2-pro">FLUX-2-PRO</option>
             </select>
@@ -72,7 +71,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
                     />
                     <button
                         onClick={props.refineScene}
-                        disabled={props.busyGen || !props.sceneFixPrompt.trim()}
+                        disabled={props.busyGen || props.busyPlacement || props.busyScene || !props.sceneFixPrompt.trim()}
                         className={styles.button}
                     >
                         Fiks scene
@@ -82,13 +81,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
               ) : (
                 <div className={styles.sceneEmpty}>Ingen scene</div>
               )}
-            </div>
-
-            <h2
-              className={`${styles.heading2Large} ${styles.heading2} ${
-                props.darkMode ? styles.dark : styles.light
-              }`}
-            ></h2>
+            </div>            
         </>
     );
 }
