@@ -48,41 +48,7 @@ describe("PlacementCard", () => {
     render(<PlacementCard {...baseProps} placementPrompt="" setPlacementPrompt={setPlacementPrompt} />);
     await userEvent.type(screen.getByRole("textbox"), "ny tekst");
     expect(setPlacementPrompt).toHaveBeenCalled();
-  });
-
-  it("renders preset options in the select", () => {
-    render(<PlacementCard {...baseProps} />);
-    expect(screen.getByRole("option", { name: "Sentrum av bord" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Venstre hjørne" })).toBeInTheDocument();
-  });
-
-  it("selecting a preset calls setSelectedPlacementPreset and setPlacementPrompt with its text", async () => {
-    const setSelectedPlacementPreset = jest.fn();
-    const setPlacementPrompt = jest.fn();
-    render(
-      <PlacementCard
-        {...baseProps}
-        setSelectedPlacementPreset={setSelectedPlacementPreset}
-        setPlacementPrompt={setPlacementPrompt}
-      />
-    );
-    await userEvent.selectOptions(screen.getAllByRole("combobox")[0], "center");
-    expect(setSelectedPlacementPreset).toHaveBeenCalledWith("center");
-    expect(setPlacementPrompt).toHaveBeenCalledWith("Plasser produktet i sentrum av bordet.");
-  });
-
-  it("selecting empty preset clears the placement prompt", async () => {
-    const setPlacementPrompt = jest.fn();
-    render(
-      <PlacementCard
-        {...baseProps}
-        selectedPlacementPreset="center"
-        setPlacementPrompt={setPlacementPrompt}
-      />
-    );
-    await userEvent.selectOptions(screen.getAllByRole("combobox")[0], "");
-    expect(setPlacementPrompt).toHaveBeenCalledWith("");
-  });
+  });  
 
   it("generate button is enabled when prompt is set and not busy", () => {
     render(<PlacementCard {...baseProps} />);
@@ -136,7 +102,7 @@ describe("PlacementCard", () => {
   it("calls setVariants when variants select changes", async () => {
     const setVariants = jest.fn();
     render(<PlacementCard {...baseProps} setVariants={setVariants} />);
-    await userEvent.selectOptions(screen.getAllByRole("combobox")[1], "4");
+    await userEvent.selectOptions(screen.getAllByRole("combobox")[0], "4");
     expect(setVariants).toHaveBeenCalledWith(4);
   });
 });
