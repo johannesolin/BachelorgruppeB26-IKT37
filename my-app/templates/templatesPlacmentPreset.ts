@@ -40,7 +40,7 @@ export const PLACMENT_PRESET: PlacementPreset[] = [
   },
   {
     id: "ute_stort",
-    label: "Store utendørs (trampolin m.m.)",
+    label: "Store utendørs (trampoline m.m.)",
     text: [
       "Plasser produktet sentralt på plenen i forgrunnen/mellomgrunnen med fot på gresset og naturlig skygge mot bakken.",
       "Skala som voksen hageutstyr, ikke miniatyr: typisk rund trampolin har hoppeflate omtrent 3 m i diameter (tilpass hvis produktet ser annerledes ut på referansebildet). Sikkerhetsnett og stolper skal være tydelig høyere enn en stående person – gjerne at nett/stolpetopp ligger i samme høydeområde som underkant eller midtre del av husets vinduer i bildet, justert etter perspektiv.",
