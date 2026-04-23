@@ -8,20 +8,16 @@ export const ProductCard = (props : ProductCardProps) => {
     function reduceSelectedImage(){
         if(selectedImage > 0){
             const newIndex = selectedImage - 1;
-            console.log(props.selectedProducts[props.index].selectedImage)
             setSelectedImage(newIndex);            
             props.changeSelectedImage(props.index, newIndex);
-            console.log(props.selectedProducts[props.index].selectedImage)
         }
     }
 
     function increaseSelectedImage(){
         if(selectedImage < props.product.images.length-1){
             const newIndex = selectedImage + 1;
-            console.log(props.selectedProducts[props.index].selectedImage)
             setSelectedImage(newIndex);            
             props.changeSelectedImage(props.index, newIndex);
-            console.log(props.selectedProducts[props.index].selectedImage)
         }
     }
 
