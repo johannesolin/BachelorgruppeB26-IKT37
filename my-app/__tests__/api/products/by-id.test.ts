@@ -16,7 +16,7 @@ function makeRequest(params: Record<string, string> = {}) {
 }
 
 describe("GET /api/products/by-id", () => {
-  afterEach(() => jest.clearAllMocks());
+  afterEach(() => jest.clearAllMocks());  
 
   it("returns 400 when productId is missing", async () => {
     const res = await GET(makeRequest());

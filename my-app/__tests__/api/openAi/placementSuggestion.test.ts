@@ -33,7 +33,6 @@ describe("POST /api/openAi/placementSuggestion", () => {
   it("returns the placement suggestion text", async () => {
     mockRequest.mockResolvedValue("Place the mug near the coffee machine.");
     const res = await POST(makeJsonRequest({
-      selectedModel: "gpt-image-1.5",
       scenePrompt: "a modern kitchen",
       productSummary: "1 coffee mug",
     }));
@@ -54,8 +53,8 @@ describe("POST /api/openAi/placementSuggestion", () => {
   });
 
   it("returns 500 when the AI request throws", async () => {
-    mockRequest.mockRejectedValue(new Error("AI error"));
-    const res = await POST(makeJsonRequest({ selectedModel: "gpt-image-1.5", scenePrompt: "x", productSummary: "y" }));
+    mockRequest.mockRejectedValue(new Error("No return text from modell"));
+    const res = await POST(makeJsonRequest({ scenePrompt: "x", productSummary: "y" }));
     expect(res.status).toBe(500);
   });
 });
