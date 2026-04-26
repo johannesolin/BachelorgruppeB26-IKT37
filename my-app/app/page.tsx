@@ -22,7 +22,7 @@ import { EditResultCard } from "@/components/EditResultCard";
 
 export default function Page() {
   // State for modell valg
-  const [selectedModel, setSelectedModel] = useState< "gpt-image-1.5" | "flux-2-pro" | "">("");
+  const [selectedModel, setSelectedModel] = useState<"gpt-image-1.5" | "flux-2-pro" | "">("");
 
   // State for templates og valgt template
   const [templates, setTemplates] = useState<Template[]>(templatesArray as Template[]);
@@ -39,6 +39,7 @@ export default function Page() {
   const [busyScene, setBusyScene] = useState<boolean>(false);
   const [busyGen, setBusyGen] = useState(false);
   const [busyPlacement, setBusyPlacement] = useState<boolean>(false);
+  const [busyDatabase, setBusyDatabase] = useState<boolean>(false);
   const [err, setErr] = useState<string>("");
 
   // State for scenefiksing (scene refinement)
@@ -58,6 +59,16 @@ export default function Page() {
 
   // State for redigering slutt bilde
   const [editResultPrompt, setEditResultPrompt] = useState<string>("");
+
+  // State for variabler til lagring av prompts
+  const [resultProductName, setResultProductName] = useState<string>("");
+  const [resultProductId, setResultProductId] = useState<string>("");
+  const [resultModel, setResultModel] = useState<"gpt-image-1.5" | "flux-2-pro" | "">("");
+  const [resultEnvironmentPrompt, setResultEnvironmentPrompt] = useState<string>("");
+  const [resultEditEnvironmentPrompts, setresultEditEnvironmentPrompts] = useState<Array<string>>([]);
+  const [resultPlacementPrompt, setResultPlacementPrompt] = useState<string>("");
+  const [resultImagePrompt, setResultImagePrompt] = useState<string>("");
+  const [resultEditImagePrompts, setresultEditImagePrompts] = useState<Array<string>>([]);
 
   // State for mørkt/lyst tema
   const [darkMode, setDarkModeState] = useState<boolean>(true);
@@ -396,6 +407,7 @@ export default function Page() {
   async function addProductId() {
     try{
       setErr("");
+      setBusyDatabase(true);
       const produktId = productIdInput.trim(); 
       if(!produktId) throw new Error("Skriv produktId");
       if (selectedProducts.length >= 4) throw new Error("Maks 4 produkter");
@@ -407,42 +419,58 @@ export default function Page() {
       if (!response.ok) throw new Error(data.error || "produkt henting feilet");
 
       setSelectedProducts((prev) =>  [...prev, data])
-
+      setBusyDatabase(false);
       setProductIdInput("");
     } catch (e){
       console.error(e);
+      setBusyDatabase(false);
       setErr("En feil oppsto når produktet skulle legges til");
       throw new Error("En feil oppsto når produktet skulle legges til");
     }  
   }
+
   /*
-   * Legger til produkter basert på fileopplastinger fra bruker.
-   * Validerer at:
-   * - Filene er av godkjent type (PNG, JPEG, WebP)
-   * - Antall valgte produkter ikke overstiger 4 totalt
-   * Opprettet forhåndsvisninger for hver fil vises i brukergrensesnittet.
-   */
+  * Funksjon for å lagre resultater i promt database  
+  */
 
-  /*function addUploads(files: FileList | null) {
-    if (!files) return;
-    setErr("");
-    const incoming = Array.from(files);
+  async function storeResults() {
+    try{
+      setErr("");
+      setBusyDatabase(true);
 
-    setSelectedProducts((prev) => {
-      // Beregn hvor mange filer som kan legges til (max 4 totalt)
-      const room = 4 - prev.length;
-      const take = incoming.slice(0, room);
+      const body = JSON.stringify({
+          productName: selectedProducts[0].name,
+          productId: selectedProducts[0].productId,
+          image: selectedVariant,
+          model: selectedModel,
+          
+          editResultPrompt,
+      })
 
-      // Opprett forhåndsvisnings-URLs for hver fil
-      const mapped: SelectedProduct[] = take.map((f) => ({
-        kind: "last-opp",
-        id: uuid(),
-        file: f,
-        previewUrl: URL.createObjectURL(f),
-      }));
-      return [...prev, ...mapped];
-    });
-  }*/
+      
+      
+      const response = await fetch("/api/openAi/editFinalImage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+      const data = await response.json();
+
+      if(!response.ok) throw new Error(data.error || "Lagring av resultater feilet"); 
+
+      
+
+
+      setBusyDatabase(false);
+
+    } catch (e) {
+      setBusyDatabase(false);
+      console.error(e);
+      setErr("En feil oppstod ved lagring av resultater");
+      throw new Error("En feil oppstod ved lagring av resultater");
+    }
+    
+  }
 
   /*
    * Returnerer JSX for hele dashbord-siden.
@@ -474,7 +502,7 @@ export default function Page() {
               Skriv inn Produkt ID
             </div>
             {/* Valg av produkt */}
-            <SelectproductByIdCard productIdInput={productIdInput} setProductIdInput={setProductIdInput} darkMode={darkMode} addProductId={addProductId} selectedProducts={selectedProducts}/>
+            <SelectproductByIdCard productIdInput={productIdInput} setProductIdInput={setProductIdInput} darkMode={darkMode} addProductId={addProductId} selectedProducts={selectedProducts} busyDatabase={busyDatabase}/>
             {/* input av fil */}            
             {/** Visning av valgte produkter */}
             {selectedProducts.length > 0 && (
@@ -498,9 +526,11 @@ export default function Page() {
             }`}
           >
             <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>
-            <EditResultCard editResultPrompt={editResultPrompt} setEditResultPrompt={setEditResultPrompt} darkMode={darkMode} resultDataUrls={resultDataUrls} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene} selectedModel={selectedModel} editFinalImage={editFinalImage}/>         
+            <EditResultCard editResultPrompt={editResultPrompt} setEditResultPrompt={setEditResultPrompt} darkMode={darkMode} resultDataUrls={resultDataUrls} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene} selectedModel={selectedModel} editFinalImage={editFinalImage}/>
+            {resultDataUrls.length === 0 && <button onClick={storeResults}>Lagre Resultat</button>}
+            <button onClick={reset}>Tøm alle input og resultater</button>        
           </section>
-          <button onClick={reset}>Tøm alle input og resultater</button>
+          
         </div>
       </main>
     </>

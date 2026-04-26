@@ -58,7 +58,8 @@ export interface SelectProductByIdCardProps {
     setProductIdInput: ( param: string ) => void;
     darkMode: boolean;
     addProductId: () => void;
-    selectedProducts: Product[];    
+    selectedProducts: Product[];
+    busyDatabase: boolean;  
 }
 
 export interface EditResultCardProps {
