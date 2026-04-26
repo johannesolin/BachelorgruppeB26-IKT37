@@ -1,6 +1,6 @@
 import 'server-only';
 import { executeQuery } from "./db";
-import { Product } from './types';
+import { Product, PromptResultsProps } from './types';
 
 
 export async function getProductById(q: string): Promise<Product[]>{
@@ -13,4 +13,8 @@ export async function getProductById(q: string): Promise<Product[]>{
     } catch (error){
         throw new Error('Error getting product' + error)
     }
+}
+
+export async function postPromptResults( body: PromptResultsProps ) {
+    console.log(body);
 }

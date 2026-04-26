@@ -21,3 +21,15 @@ export type SessionInfo = {
     timeout: number;
     close?: NodeJS.Timeout | null;
 }
+
+export interface PromptResultsProps {
+    created: Date;
+    productName: Array<string>;
+    productId: Array<number>;
+    imageLink: string;
+    model: string;
+    miljoPrompt: string;
+    miljoEditPrompt: Array<string>;
+    imagePrompt: string;
+    imageEditPrompt: Array<string>;
+}

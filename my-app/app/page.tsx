@@ -61,14 +61,13 @@ export default function Page() {
   const [editResultPrompt, setEditResultPrompt] = useState<string>("");
 
   // State for variabler til lagring av prompts
-  const [resultProductName, setResultProductName] = useState<string>("");
-  const [resultProductId, setResultProductId] = useState<string>("");
+  const [resultProductNames, setResultProductNames] = useState<Array<string>>([]);
+  const [resultProductIds, setResultProductIds] = useState<Array<number>>([]);
   const [resultModel, setResultModel] = useState<"gpt-image-1.5" | "flux-2-pro" | "">("");
   const [resultEnvironmentPrompt, setResultEnvironmentPrompt] = useState<string>("");
-  const [resultEditEnvironmentPrompts, setresultEditEnvironmentPrompts] = useState<Array<string>>([]);
-  const [resultPlacementPrompt, setResultPlacementPrompt] = useState<string>("");
+  const [resultEditEnvironmentPrompts, setResultEditEnvironmentPrompts] = useState<Array<string>>([]);
   const [resultImagePrompt, setResultImagePrompt] = useState<string>("");
-  const [resultEditImagePrompts, setresultEditImagePrompts] = useState<Array<string>>([]);
+  const [resultEditImagePrompts, setResultEditImagePrompts] = useState<Array<string>>([]);
 
   // State for mørkt/lyst tema
   const [darkMode, setDarkModeState] = useState<boolean>(true);
@@ -118,11 +117,14 @@ export default function Page() {
    */
 
   async function generateScene(){
-    try{
-      setErr("");
+    try{      
       setBusyScene(true);
+      setErr("");
       setEditResultPrompt("");
       setSceneFixPrompt("");
+      setResultEnvironmentPrompt("");
+      setResultEditEnvironmentPrompts([]);
+
       const temp = templates.find(temp => temp.id === templateId) as Template;
       const form = new FormData();      
 
@@ -148,9 +150,12 @@ export default function Page() {
         throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
 
-      const data = await respons.json();    
-      setSceneUrl(data);
-      setSceneTemplate(temp);
+      const data = await respons.json();
+      if(data){    
+        setSceneUrl(data);
+        setSceneTemplate(temp);
+        setResultEnvironmentPrompt(scenePrompt);      
+      }
       setBusyScene(false);
     } catch (e){
       setBusyScene(false);
@@ -192,7 +197,10 @@ export default function Page() {
       }
 
       const data = await respons.json();
-      if(data.length > 0) setSceneUrl(data);
+      if(data.length > 0){
+        setSceneUrl(data);
+        setResultEditEnvironmentPrompts((prev) => [...prev, sceneFixPrompt]);
+      }
       setBusyScene(false);
     } catch (e){
       setBusyScene(false);
@@ -211,6 +219,12 @@ export default function Page() {
       setErr("");
       setBusyGen(true);
       setResultDataUrls([]);
+      setResultModel("");
+      setResultProductIds([]);
+      setResultProductNames([]);
+      setResultImagePrompt("");
+      setResultEditImagePrompts([]);
+
       const form = new FormData();
       form.append("prompt", String(placementPrompt).trim());
       form.append("variants", String(variants));
@@ -241,6 +255,13 @@ export default function Page() {
       if(data.length > 0){
         setResultDataUrls(data);
         setSelectedVariant(0);
+        setResultModel(selectedModel);
+        const ids: Array<number> = [];
+        const names: Array<string> = [];
+        selectedProducts.forEach(product => {ids.push(product.productId); names.push(product.name);});
+        setResultProductIds(ids);
+        setResultProductNames(names);
+        setResultImagePrompt(placementPrompt);
       }
       setBusyGen(false);
     } catch (e){
@@ -272,7 +293,7 @@ export default function Page() {
 
       const data = await respons.json();
       if(data.length > 0){
-        setPlacementPrompt(data);
+        setPlacementPrompt(data);        
       }      
       setBusyPlacement(false);
 
@@ -290,14 +311,13 @@ export default function Page() {
 
   async function editFinalImage(){
     try{setErr("");
-      setBusyGen(true);
+      setBusyGen(true);      
 
       const scene = resultDataUrls[selectedVariant];
-
       const body = JSON.stringify({
           scene,
           editResultPrompt,
-      })
+      });
 
       let respons;
       if(selectedModel === "gpt-image-1.5"){
@@ -310,11 +330,11 @@ export default function Page() {
         respons = await fetch("/api/flux2Pro/editFinalImage", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body
+          body,
         });
       } else {
         setBusyGen(false);
-        setErr("Velg modell for generering av av miljøbilde")
+        setErr("Velg modell for generering av av miljøbilde");
         throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
 
@@ -322,6 +342,7 @@ export default function Page() {
       if(data.length > 0){
         setResultDataUrls([data]);
         setSelectedVariant(0);
+        setResultEditImagePrompts((prev) => [...prev, editResultPrompt]);
       }
 
       setBusyGen(false);  
@@ -412,8 +433,16 @@ export default function Page() {
       if(!produktId) throw new Error("Skriv produktId");
       if (selectedProducts.length >= 4) throw new Error("Maks 4 produkter");
 
+      const body = JSON.stringify({
+        id: produktId,
+      });
       // Slå opp produkt via API
-      const response =  await fetch(`/api/products/by-id?productId=${encodeURIComponent(produktId)}`);      
+      const response = await fetch("/api/products/by-id", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      })
+      
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.error || "produkt henting feilet");
@@ -439,26 +468,26 @@ export default function Page() {
       setBusyDatabase(true);
 
       const body = JSON.stringify({
-          productName: selectedProducts[0].name,
-          productId: selectedProducts[0].productId,
-          image: selectedVariant,
-          model: selectedModel,
-          
-          editResultPrompt,
+          productName: resultProductNames,
+          productId:  resultProductIds,
+          image: resultDataUrls[selectedVariant],
+          model: resultModel,
+          miljoPrompt: resultEnvironmentPrompt,
+          miljoEditPrompt: resultEditEnvironmentPrompts,
+          imagePrompt: resultImagePrompt,
+          imageEditPrompt: resultEditImagePrompts,
       })
-
       
+      console.log(body);
       
-      const response = await fetch("/api/openAi/editFinalImage", {
+      /*const response = await fetch("", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body,
       });
       const data = await response.json();
 
-      if(!response.ok) throw new Error(data.error || "Lagring av resultater feilet"); 
-
-      
+      if(!response.ok) throw new Error(data.error || "Lagring av resultater feilet");*/     
 
 
       setBusyDatabase(false);
@@ -527,7 +556,7 @@ export default function Page() {
           >
             <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>
             <EditResultCard editResultPrompt={editResultPrompt} setEditResultPrompt={setEditResultPrompt} darkMode={darkMode} resultDataUrls={resultDataUrls} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene} selectedModel={selectedModel} editFinalImage={editFinalImage}/>
-            {resultDataUrls.length === 0 && <button onClick={storeResults}>Lagre Resultat</button>}
+            {resultDataUrls.length != 0 && <button onClick={storeResults}>Lagre Resultat</button>}
             <button onClick={reset}>Tøm alle input og resultater</button>        
           </section>
           
