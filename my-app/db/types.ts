@@ -23,13 +23,14 @@ export type SessionInfo = {
 }
 
 export interface PromptResultsProps {
+    id: string;
     created: Date;
-    productName: Array<string>;
-    productId: Array<number>;
+    productNames: Array<string>;
+    productIds: Array<number>;
     imageLink: string;
     model: string;
     miljoPrompt: string;
-    miljoEditPrompt: Array<string>;
+    miljoEditPrompts: Array<string>;
     imagePrompt: string;
-    imageEditPrompt: Array<string>;
+    imageEditPrompts: Array<string>;
 }

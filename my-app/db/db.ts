@@ -62,6 +62,11 @@ export async function executeQuery(query: string, q: string) {
     }
 }
 
+/*export async function putImage( image: string ){
+    const {session} = await getOrCreateSession();
+    session.
+}*/
+
 function scheduleClose(session: SessionInfo, time: number){
     if (session.close) {
         clearTimeout(session.close);
@@ -69,7 +74,6 @@ function scheduleClose(session: SessionInfo, time: number){
     }
     session.close = setTimeout(async () => {
         const cur = sessionStore["default"];
-        console.log("test")
         if(cur && !(cur instanceof Promise) && cur.session === session.session) {            
             await closeSession(session);
         }
@@ -79,7 +83,6 @@ function scheduleClose(session: SessionInfo, time: number){
 async function closeSession(session: SessionInfo): Promise<void>{
     try {
         await session.session.close();
-        console.log("session closed")
     } catch (error) {
         console.warn("Error closing session", error);
     }

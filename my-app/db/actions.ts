@@ -15,6 +15,6 @@ export async function getProductById(q: string): Promise<Product[]>{
     }
 }
 
-export async function postPromptResults( body: PromptResultsProps ) {
-    console.log(body);
+export async function postPromptResults( props: PromptResultsProps ) {
+    console.log(props);
 }

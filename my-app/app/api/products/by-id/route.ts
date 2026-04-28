@@ -14,6 +14,7 @@ export async function POST( req: Request ){
         if(!result || result.length === 0){
             return NextResponse.json({ error: "Product not found" }, { status: 404 });
         }
+        // Opprettelse av variabel for valg av bilde til innsending til modellene.
         result[0].selectedImage = 0;
         return NextResponse.json(result[0])
     } catch (e){
