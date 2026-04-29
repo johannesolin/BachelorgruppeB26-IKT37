@@ -1,5 +1,3 @@
-import IDBSQLSession from "@databricks/sql/dist/contracts/IDBSQLSession";
-
 export interface ProductImage {
     category: string;
     height: number;
@@ -15,22 +13,23 @@ export interface Product {
     selectedImage: number; 
 }
 
-export type SessionInfo = {
-    session: IDBSQLSession;
-    created: number;
-    timeout: number;
-    close?: NodeJS.Timeout | null;
+export type Q = {
+    [key: string]: string;
+}
+
+export interface PostEnviromentResultsProps {
+    id: string;
+    prompt: string;
+    category: string;
+    imageString: string;
+    model: "gpt-image-1.5" | "" | "flux-2-pro";
 }
 
 export interface PromptResultsProps {
     id: string;
-    created: Date;
     productNames: Array<string>;
     productIds: Array<number>;
     imageLink: string;
     model: string;
-    miljoPrompt: string;
-    miljoEditPrompts: Array<string>;
-    imagePrompt: string;
-    imageEditPrompts: Array<string>;
+    prompt: string;
 }

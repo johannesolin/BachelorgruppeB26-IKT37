@@ -36,6 +36,16 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
                 </option>
               ))}
             </select>
+            <select
+              value={props.enviromentCategory}
+              onChange={(e) => props.setEnviromentCategory(e.target.value as "Uteplass/terasse" | "Uteplass/gressplen" | "Stue" | "")}
+              className={`${styles.select} ${props.darkMode ? styles.dark : styles.light}`}
+              >
+                <option value="">- Velg kategori for lagring av Miljøbilde -</option>
+                <option value="Uteplass/terasse" key="Uteplass/terasse">Uteplass/terasse</option>
+                <option value="Uteplass/gressplen" key="Uteplass/gressplen">Uteplass/gressplen</option>
+                <option value="Stue" key="Stue">Stue</option>
+            </select>
             Bruk teksten fra templaten eller korriger teksten
             <textarea
               value={props.scenePrompt}
@@ -44,6 +54,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
               className={`${styles.textarea} ${props.darkMode ? styles.dark : styles.light}`}
             />
             <button onClick={props.generateScene} disabled={props.busyGen || props.busyScene || props.busyPlacement || props.selectedModel === ""}>{props.busyScene ? "Genererer Miljø" : props.sceneUrl === "" ? "Generer Miljø" : "Regenerer Miljø" }</button>
+            {props.sceneUrl != "" && <button onClick={props.storeEnviromentResult} disabled={props.busyDatabase || props.enviromentCategory === ""}>Lagre Miljøbilde</button>}
             <div className={styles.sceneContainer}>
               <div className={styles.sceneLabel}>Miljøbilde</div>
               {props.busyGen ? (

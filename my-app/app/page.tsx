@@ -60,16 +60,18 @@ export default function Page() {
   // State for redigering slutt bilde
   const [editResultPrompt, setEditResultPrompt] = useState<string>("");
 
-  // State for variabler til lagring av prompts
+  // State for variabler til lagring av miljøbilde resultater
+  const [resultEnvironmentPrompt, setResultEnvironmentPrompt] = useState<string>("");
+  const [enviromentCategory, setEnviromentCategory] = useState<"Uteplass/terasse" | "Uteplass/gressplen" | "Stue" | "">("");
+  const [resultEnviromentModel, setResultEnviromentModel] = useState<string>("");
+
+  // State for lagringa av produkt plassering resulter
   const [resultProductNames, setResultProductNames] = useState<Array<string>>([]);
   const [resultProductIds, setResultProductIds] = useState<Array<number>>([]);
-  const [resultModel, setResultModel] = useState<"gpt-image-1.5" | "flux-2-pro" | "">("");
-  const [resultEnvironmentPrompt, setResultEnvironmentPrompt] = useState<string>("");
-  const [resultEditEnvironmentPrompts, setResultEditEnvironmentPrompts] = useState<Array<string>>([]);
+  const [resultModel, setResultModel] = useState<"gpt-image-1.5" | "flux-2-pro" | "">("");  
   const [resultImagePrompt, setResultImagePrompt] = useState<string>("");
-  const [resultEditImagePrompts, setResultEditImagePrompts] = useState<Array<string>>([]);
 
-  // State for å bekrefte lagring av resultat
+  // State for bekreftelse av DB lagring
   const [storageMessage, setStorageMessage] = useState<string>("");
 
   // State for mørkt/lyst tema
@@ -120,15 +122,13 @@ export default function Page() {
    */
 
   async function generateScene(){
-    try{
-      setStorageMessage("");     
+    try{    
       setBusyScene(true);
       setErr("");
       setEditResultPrompt("");
       setSceneFixPrompt("");
       setResultEnvironmentPrompt("");
-      setResultEditEnvironmentPrompts([]);
-      setResultImagePrompt("");
+      setResultEnviromentModel("");
 
       const temp = templates.find(temp => temp.id === templateId) as Template;
       const form = new FormData();      
@@ -159,7 +159,8 @@ export default function Page() {
       if(data){    
         setSceneUrl(data);
         setSceneTemplate(temp);
-        setResultEnvironmentPrompt(scenePrompt);      
+        setResultEnvironmentPrompt(scenePrompt);
+        setResultEnviromentModel(selectedModel);      
       }
       setBusyScene(false);
     } catch (e){
@@ -205,7 +206,6 @@ export default function Page() {
       const data = await respons.json();
       if(data.length > 0){
         setSceneUrl(data);
-        setResultEditEnvironmentPrompts((prev) => [...prev, sceneFixPrompt]);
       }
       setBusyScene(false);
     } catch (e){
@@ -222,7 +222,6 @@ export default function Page() {
 
   async function placeProductsInScene() {
     try{
-      setStorageMessage("");
       setErr("");
       setBusyGen(true);
       setResultDataUrls([]);
@@ -230,7 +229,6 @@ export default function Page() {
       setResultProductIds([]);
       setResultProductNames([]);
       setResultImagePrompt("");
-      setResultEditImagePrompts([]);
 
       const form = new FormData();
       form.append("prompt", String(placementPrompt).trim());
@@ -273,9 +271,8 @@ export default function Page() {
       setBusyGen(false);
     } catch (e){
       setBusyGen(false);
-      console.error(e);
       setErr("Et problem oppsto ved generering av bilde");
-      throw new Error("Et problem oppsto ved generering av bilde");
+      throw new Error("Et problem oppsto ved generering av bilde" + e);
     }
   }
   /*
@@ -284,7 +281,6 @@ export default function Page() {
   
   async function getPlacementSuggestion(){     
     try{
-      setStorageMessage("");
       setErr("");
       setBusyPlacement(true);
       const productSummary = buildProductSummary();
@@ -307,9 +303,8 @@ export default function Page() {
 
     } catch (e){
       setBusyPlacement(false);
-      console.error(e);
       setErr("Henting av plasserings forslag feilet!");
-      throw new Error("Henting av plasserings forslag feilet!");
+      throw new Error("Henting av plasserings forslag feilet!" + e);
     }
   }
 
@@ -320,7 +315,6 @@ export default function Page() {
   async function editFinalImage(){
     try{
       setErr("");
-      setStorageMessage("");
       setBusyGen(true);      
 
       const scene = resultDataUrls[selectedVariant];
@@ -352,15 +346,13 @@ export default function Page() {
       if(data.length > 0){
         setResultDataUrls([data]);
         setSelectedVariant(0);
-        setResultEditImagePrompts((prev) => [...prev, editResultPrompt]);
       }
 
       setBusyGen(false);  
     } catch (e){
       setBusyGen(false);
-      console.error(e);
       setErr("Et problem oppsto ved generering av miljøbilde");
-      throw new Error("Et problem oppsto ved generering av miljøbilde");
+      throw new Error("Et problem oppsto ved generering av miljøbilde" +e );
     }
   }
 
@@ -472,17 +464,64 @@ export default function Page() {
   }
 
   /*
+  * Funksjon for å lagre miljøbilde resultat
+  */
+
+  async function storeEnviromentResult() {
+    try{
+      setErr("");
+      setBusyDatabase(true);
+
+      if(enviromentCategory === ""){
+        setErr("Velg kategori før lagering av miljøbilde!");
+        throw new Error("Velg kategori før lagering av miljøbilde!");
+      }
+
+      if(resultEnvironmentPrompt === "" || sceneUrl === "" || resultEnviromentModel === ""){
+        setErr("Mangler data for lagering av resultat.");
+        throw new Error("Mangler data for lagering av resultat.");
+      } 
+
+      const body = JSON.stringify({
+        imageString: sceneUrl,
+        prompt: resultEnvironmentPrompt,
+        category: enviromentCategory,
+        model: resultEnviromentModel,
+      });
+
+      const response = await fetch("/api/promptDb/post-env-result", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+
+      const result = await response.json();
+
+      if(!result) throw new Error("Lagring av resultater feilet " + result.error);
+
+      console.log(result);
+
+      setResultEnvironmentPrompt("");
+      setResultEnviromentModel("");
+      setBusyDatabase(false);
+    }catch (e){
+      setBusyDatabase(false);
+      setErr("Feil ved larging av Miljøbilde!");
+      throw new Error(`Error with storing of enviroment results ${e}`);
+    }    
+  }
+
+
+  /*
   * Funksjon for å lagre resultater i promt database  
   */
 
   async function storeResults() {
     try{
-      setStorageMessage("");
       setErr("");
       setBusyDatabase(true);
        
-      if(resultDataUrls.length === 0 || resultProductNames.length === 0 || resultProductIds.length === 0 || resultModel === "" || resultEnvironmentPrompt === "" || resultImagePrompt === ""){ 
-        console.log("ggggg")
+      if(resultDataUrls.length === 0 || resultProductNames.length === 0 || resultProductIds.length === 0 || resultModel === "" || resultImagePrompt === ""){
         setErr("Mangler data for lagering av resultat.");
         throw new Error("Mangler data for lagering av resultat.");
       } 
@@ -492,10 +531,7 @@ export default function Page() {
           productIds:  resultProductIds,
           image: resultDataUrls[selectedVariant],
           model: resultModel,
-          miljoPrompt: resultEnvironmentPrompt,
-          miljoEditPrompts: resultEditEnvironmentPrompts,
-          imagePrompt: resultImagePrompt,
-          imageEditPrompts: resultEditImagePrompts,
+          prompt: resultImagePrompt,
       });
       
       const response = await fetch("/api/promptDb/post-result", {
@@ -503,19 +539,22 @@ export default function Page() {
         headers: { "Content-Type": "application/json" },
         body,
       });
-      //const data = await response.json();
+      
+      const result = await response.json();
 
-      //if(!response.ok) throw new Error(data.error || "Lagring av resultater feilet");*/     
+      if(!result) throw new Error("Lagring av resultater feilet" + result.error);
 
-      setStorageMessage("Lagring av resultat fullført!");
+      console.log(result);
 
+      setResultImagePrompt("");
+      setResultModel("");
+      setResultProductIds([]);
+      setResultProductNames([]);
       setBusyDatabase(false);
-
     } catch (e) {
       setBusyDatabase(false);
-      console.error(e);
       setErr("En feil oppstod ved lagring av resultater");
-      throw new Error("En feil oppstod ved lagring av resultater");
+      throw new Error("En feil oppstod ved lagring av resultater " + e);
     }
     
   }
@@ -538,7 +577,8 @@ export default function Page() {
           >
             <EnvironmentCard templateId={templateId} scenePrompt={scenePrompt} setScenePrompt={setScenePrompt} setTemplateId={setTemplateId} templates={templates} generateScene={generateScene} 
               darkMode={darkMode} sceneUrl={sceneUrl} busyGen={busyGen} busyScene={busyScene} busyPlacement={busyPlacement} sceneFixPrompt={sceneFixPrompt} setSceneFixPrompt={setSceneFixPrompt} 
-              refineScene={refineScene} selectedModel={selectedModel} setSelectedModel={setSelectedModel}/>
+              refineScene={refineScene} selectedModel={selectedModel} setSelectedModel={setSelectedModel} busyDatabase={busyDatabase} storeEnviromentResult={storeEnviromentResult}
+              enviromentCategory={enviromentCategory} setEnviromentCategory={setEnviromentCategory}/>
             <h2>
               Velg 1–4 produkter
             </h2>
@@ -575,11 +615,10 @@ export default function Page() {
           >
             <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>
             <EditResultCard editResultPrompt={editResultPrompt} setEditResultPrompt={setEditResultPrompt} darkMode={darkMode} resultDataUrls={resultDataUrls} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene} selectedModel={selectedModel} editFinalImage={editFinalImage}/>
-            {resultDataUrls.length != 0 && <button onClick={storeResults} disabled={resultEnvironmentPrompt === "" || resultImagePrompt === ""}>Lagre Resultat</button>}
+            {resultDataUrls.length != 0 && <button onClick={storeResults} disabled={busyDatabase || resultImagePrompt === ""}>Lagre Resultat</button>}
             {storageMessage != "" && <h3>{storageMessage}</h3>}
             <button onClick={reset}>Tøm alle input og resultater</button>        
-          </section>
-          
+          </section>          
         </div>
       </main>
     </>
