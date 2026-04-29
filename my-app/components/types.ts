@@ -22,12 +22,16 @@ export interface EnvironmentCardProps {
     sceneUrl: string;
     busyGen: boolean;
     busyScene: boolean;
+    busyDatabase: boolean;
     busyPlacement: boolean;
     sceneFixPrompt: string;
     setSceneFixPrompt: (param: string) => void;
     refineScene: () => void;
     selectedModel: string;
     setSelectedModel: ( param: "gpt-image-1.5" | "" | "flux-2-pro" ) => void;
+    storeEnviromentResult: () => void;
+    enviromentCategory: "Uteplass/terasse" | "Uteplass/gressplen" | "Stue" | "";
+    setEnviromentCategory: (param: "Uteplass/terasse" | "Uteplass/gressplen" | "Stue" | "") => void;
 }
 
 export interface ResultsCardProps {
@@ -58,7 +62,8 @@ export interface SelectProductByIdCardProps {
     setProductIdInput: ( param: string ) => void;
     darkMode: boolean;
     addProductId: () => void;
-    selectedProducts: Product[];    
+    selectedProducts: Product[];
+    busyDatabase: boolean;  
 }
 
 export interface EditResultCardProps {
