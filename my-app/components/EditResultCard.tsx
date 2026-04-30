@@ -14,7 +14,7 @@ export const EditResultCard = ( props: EditResultCardProps ) => {
                     placeholder='F.eks: "Ta bort dusjen. Behold alt annet uendret."'              
                     className={`${styles.textarea} ${props.darkMode ? styles.dark : styles.light}`}
                     />
-                    <button onClick={props.editFinalImage} disabled={props.busyGen || props.busyScene || props.busyPlacement || props.selectedModel === "" || props.editResultPrompt === ""}>{props.busyGen ? "Genererer" : "Rediger bilde"}</button>
+                    <button onClick={props.editFinalImage} disabled={props.busyGen || props.selectedModel === "" || props.editResultPrompt === ""}>Rediger bilde</button>
                 </>
             )} 
         </>

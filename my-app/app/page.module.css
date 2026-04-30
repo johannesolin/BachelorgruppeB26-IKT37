@@ -741,3 +741,21 @@
 .flexEnd {
   align-self: end;
 }
+
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  padding: 1rem;
+  z-index: 1;
+  width: 25%;
+  height: 25%;
+}
+
+.modalOverlayShow {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+}

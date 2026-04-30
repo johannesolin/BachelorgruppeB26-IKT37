@@ -15,7 +15,7 @@ export function PlacementCard( props: PlacementCardProps ){
             placeholder="Eks: Plasser produktet i sentrum av bordet. Orienter det mot venstre. Produktet skal være lettsynlig og dominere komposisjonen."
             className={`${styles.textarea} ${props.darkMode ? styles.dark : styles.light}`}
           />
-          <button onClick={props.getPlacementSuggestion} disabled={props.busyGen || props.selectedProducts.length === 0 || props.selectedModel === "" || props.scenePrompt === "" || props.busyScene || props.busyPlacement}>{props.busyPlacement ? "Henter forslag fra språkmodell..." : "Få forslag fra språkmodell (GPT 5.4)"}</button>
+          <button onClick={props.getPlacementSuggestion} disabled={props.busyGen || props.selectedProducts.length === 0 || props.selectedModel === "" || props.scenePrompt === ""}>Få forslag fra språkmodell (GPT 5.4)</button>
           <div className={styles.variantsContainer}>
             <label className={styles.flex1}>
               <div className={styles.variantsLabel}>Varianter</div>
@@ -33,7 +33,7 @@ export function PlacementCard( props: PlacementCardProps ){
             </label>
             <button
               onClick={props.placeProductsInScene}
-              disabled={props.busyGen || props.busyScene || props.busyPlacement || props.placementPrompt.length === 0}
+              disabled={props.busyGen || props.placementPrompt.length === 0}
               className={`${styles.button} ${styles.flex1} ${styles.flexEnd}`}
             >
               {props.busyGen ? "Genererer..." : "Generer"}
