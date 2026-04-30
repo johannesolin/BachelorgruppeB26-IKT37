@@ -19,6 +19,7 @@ export function SelectproductByIdCard( props: SelectProductByIdCardProps ){
               >
                 Legg til
               </button>
+              <button onClick={() => props.setSearchModalState(true)}>Søk etter kategori</button>
             </div>
         </>
     );

@@ -59,7 +59,8 @@ export interface SelectProductByIdCardProps {
     darkMode: boolean;
     addProductId: () => void;
     selectedProducts: Product[];
-    busyDatabase: boolean;  
+    busyDatabase: boolean;
+    setSearchModalState: (param: boolean) => void; 
 }
 
 export interface EditResultCardProps {
@@ -80,4 +81,15 @@ export interface LoadingModalProps {
 export interface StoringModalProps {
     busyDatabase: boolean;
     darkMode: boolean;
+}
+
+export interface ProductSearchModalProps {
+    searchModalState: boolean;
+    darkMode: boolean;
+    setSeachModalState: (param: boolean) => void;
+}
+
+export interface Option {
+    value: string;
+    label: string;
 }

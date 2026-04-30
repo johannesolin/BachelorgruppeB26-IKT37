@@ -14,6 +14,7 @@ import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
 import { EditResultCard } from "@/components/EditResultCard";
 import { LoadingModal } from "@/components/LoadingModal";
 import { StoringModal } from "@/components/StoringModal";
+import { ProductSearchModal } from "@/components/ProductSearchModal";
 
 /*
  * Hovedkomponent for dashbordet.
@@ -72,6 +73,9 @@ export default function Page() {
 
   // State for bekreftelse av DB lagring
   const [storageMessage, setStorageMessage] = useState<string>("");
+
+  // State for åpning av produkt søk modal
+  const [searchModalState, setSearchModalState] = useState<boolean>(false);
 
   // State for mørkt/lyst tema
   const [darkMode, setDarkModeState] = useState<boolean>(true);
@@ -588,7 +592,7 @@ export default function Page() {
               Skriv inn Produkt ID
             </div>
             {/* Valg av produkt */}
-            <SelectproductByIdCard productIdInput={productIdInput} setProductIdInput={setProductIdInput} darkMode={darkMode} addProductId={addProductId} selectedProducts={selectedProducts} busyDatabase={busyDatabase}/>
+            <SelectproductByIdCard setSearchModalState={setSearchModalState} productIdInput={productIdInput} setProductIdInput={setProductIdInput} darkMode={darkMode} addProductId={addProductId} selectedProducts={selectedProducts} busyDatabase={busyDatabase}/>
             {/* input av fil */}            
             {/** Visning av valgte produkter */}
             {selectedProducts.length > 0 && (
@@ -618,6 +622,7 @@ export default function Page() {
             <button onClick={reset}>Tøm alle input og resultater</button>        
           </section>                 
         </div>
+        <ProductSearchModal darkMode={darkMode} searchModalState={searchModalState} setSeachModalState={setSearchModalState}/>
         <LoadingModal busyGen={busyGen} darkMode={darkMode}/>
         <StoringModal busyDatabase={busyDatabase} darkMode={darkMode}/>     
       </main>
