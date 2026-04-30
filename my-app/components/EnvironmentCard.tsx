@@ -53,7 +53,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
               rows={6}              
               className={`${styles.textarea} ${props.darkMode ? styles.dark : styles.light}`}
             />
-            <button onClick={props.generateScene} disabled={props.busyGen || props.busyScene || props.busyPlacement || props.selectedModel === ""}>{props.busyScene ? "Genererer Miljø" : props.sceneUrl === "" ? "Generer Miljø" : "Regenerer Miljø" }</button>
+            <button onClick={props.generateScene} disabled={props.busyGen || props.selectedModel === ""}>{props.sceneUrl === "" ? "Generer Miljø" : "Regenerer Miljø" }</button>
             {props.sceneUrl != "" && <button onClick={props.storeEnviromentResult} disabled={props.busyDatabase || props.enviromentCategory === ""}>Lagre Miljøbilde</button>}
             <div className={styles.sceneContainer}>
               <div className={styles.sceneLabel}>Miljøbilde</div>
@@ -82,7 +82,7 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
                     />
                     <button
                         onClick={props.refineScene}
-                        disabled={props.busyGen || props.busyPlacement || props.busyScene || !props.sceneFixPrompt.trim()}
+                        disabled={props.busyGen || !props.sceneFixPrompt.trim()}
                         className={styles.button}
                     >
                         Fiks scene

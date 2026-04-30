@@ -21,9 +21,7 @@ export interface EnvironmentCardProps {
     darkMode: boolean;
     sceneUrl: string;
     busyGen: boolean;
-    busyScene: boolean;
     busyDatabase: boolean;
-    busyPlacement: boolean;
     sceneFixPrompt: string;
     setSceneFixPrompt: (param: string) => void;
     refineScene: () => void;
@@ -49,8 +47,6 @@ export interface PlacementCardProps {
     setVariants: ( param: number ) => void;
     placeProductsInScene: () => void;
     busyGen: boolean;
-    busyScene: boolean;
-    busyPlacement: boolean;
     selectedProducts: Product[];
     selectedModel: "gpt-image-1.5" | "flux-2-pro" | "";
     scenePrompt: string;    
@@ -70,10 +66,18 @@ export interface EditResultCardProps {
     darkMode: boolean;
     editResultPrompt: string;
     setEditResultPrompt : ( param: string ) => void;
-    busyScene: boolean;
     busyGen: boolean;
-    busyPlacement: boolean;
     selectedModel: string;
     editFinalImage: () => void;
     resultDataUrls: string[];
+}
+
+export interface LoadingModalProps {
+    busyGen: boolean;
+    darkMode: boolean;
+}
+
+export interface StoringModalProps {
+    busyDatabase: boolean;
+    darkMode: boolean;
 }

@@ -12,13 +12,14 @@ import { ProductCard } from "@/components/ProductCard";
 import { PlacementCard } from "@/components/PlacementCard";
 import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
 import { EditResultCard } from "@/components/EditResultCard";
+import { LoadingModal } from "@/components/LoadingModal";
+import { StoringModal } from "@/components/StoringModal";
 
 /*
  * Hovedkomponent for dashbordet.
  * Håndterer alle aspekter av miljøbilde- og produktplasseringsflyten,
  * inkludert template-valg, scenemanipulasjon, produktvalg og generering av endelige bilder.
  */
-
 
 export default function Page() {
   // State for modell valg
@@ -36,9 +37,7 @@ export default function Page() {
   const [sceneTemplate, setSceneTemplate] = useState<Template | null>(null);
 
   // State for lastetilstander og feilmeldinger
-  const [busyScene, setBusyScene] = useState<boolean>(false);
-  const [busyGen, setBusyGen] = useState(false);
-  const [busyPlacement, setBusyPlacement] = useState<boolean>(false);
+  const [busyGen, setBusyGen] = useState<boolean>(false);
   const [busyDatabase, setBusyDatabase] = useState<boolean>(false);
   const [err, setErr] = useState<string>("");
 
@@ -123,7 +122,7 @@ export default function Page() {
 
   async function generateScene(){
     try{    
-      setBusyScene(true);
+      setBusyGen(true);
       setErr("");
       setEditResultPrompt("");
       setSceneFixPrompt("");
@@ -150,7 +149,7 @@ export default function Page() {
           body: form,
         });
       } else {
-        setBusyScene(false);
+        setBusyGen(false);
         setErr("Velg modell for generering av av miljøbilde")
         throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
@@ -162,9 +161,9 @@ export default function Page() {
         setResultEnvironmentPrompt(scenePrompt);
         setResultEnviromentModel(selectedModel);      
       }
-      setBusyScene(false);
+      setBusyGen(false);
     } catch (e){
-      setBusyScene(false);
+      setBusyGen(false);
       console.error(e);
       setErr("Et problem oppsto ved generering av miljøbilde");
       throw new Error("Et problem oppsto ved generering av miljøbilde");
@@ -179,7 +178,7 @@ export default function Page() {
     try{
       setStorageMessage("");
       setErr("");
-      setBusyScene(true);
+      setBusyGen(true);
       const form = new FormData();
       form.append("size", String(sceneTemplate?.size));
       form.append("prompt", String(sceneFixPrompt).trim());    
@@ -198,7 +197,7 @@ export default function Page() {
           body: form,
         });
       } else {
-        setBusyScene(false);
+        setBusyGen(false);
         setErr("Velg modell for generering av av miljøbilde")
         throw new Error("Et problem oppsto ved generering av miljøbilde");
       }
@@ -207,9 +206,9 @@ export default function Page() {
       if(data.length > 0){
         setSceneUrl(data);
       }
-      setBusyScene(false);
+      setBusyGen(false);
     } catch (e){
-      setBusyScene(false);
+      setBusyGen(false);
       console.error(e);
       setErr("Et problem oppsto ved generering av miljøbilde");
       throw new Error("Et problem oppsto ved generering av miljøbilde");
@@ -282,7 +281,7 @@ export default function Page() {
   async function getPlacementSuggestion(){     
     try{
       setErr("");
-      setBusyPlacement(true);
+      setBusyGen(true);
       const productSummary = buildProductSummary();
 
       const respons = await fetch("/api/openAi/placementSuggestion", {
@@ -299,10 +298,10 @@ export default function Page() {
       if(data.length > 0){
         setPlacementPrompt(data);        
       }      
-      setBusyPlacement(false);
+      setBusyGen(false);
 
     } catch (e){
-      setBusyPlacement(false);
+      setBusyGen(false);
       setErr("Henting av plasserings forslag feilet!");
       throw new Error("Henting av plasserings forslag feilet!" + e);
     }
@@ -511,7 +510,6 @@ export default function Page() {
     }    
   }
 
-
   /*
   * Funksjon for å lagre resultater i promt database  
   */
@@ -569,14 +567,14 @@ export default function Page() {
       <DashboardNav darkMode={darkMode} onDarkModeChange={setDarkMode} />
       <main className={styles.main}>
         <h1>Miljøbilde + produktplassering</h1>     
-        <div className={styles.Miljøbilde}>
+        <div className={styles.Miljøbilde}>          
           <section
             className={`${styles.configSection} ${
               darkMode ? styles.dark : styles.light
             }`}
           >
             <EnvironmentCard templateId={templateId} scenePrompt={scenePrompt} setScenePrompt={setScenePrompt} setTemplateId={setTemplateId} templates={templates} generateScene={generateScene} 
-              darkMode={darkMode} sceneUrl={sceneUrl} busyGen={busyGen} busyScene={busyScene} busyPlacement={busyPlacement} sceneFixPrompt={sceneFixPrompt} setSceneFixPrompt={setSceneFixPrompt} 
+              darkMode={darkMode} sceneUrl={sceneUrl} busyGen={busyGen} sceneFixPrompt={sceneFixPrompt} setSceneFixPrompt={setSceneFixPrompt} 
               refineScene={refineScene} selectedModel={selectedModel} setSelectedModel={setSelectedModel} busyDatabase={busyDatabase} storeEnviromentResult={storeEnviromentResult}
               enviromentCategory={enviromentCategory} setEnviromentCategory={setEnviromentCategory}/>
             <h2>
@@ -605,7 +603,7 @@ export default function Page() {
               </div>
             )}
             {/* Plassering av produkter i miljøbilde */}
-            <PlacementCard selectedProducts={selectedProducts} selectedModel={selectedModel} scenePrompt={scenePrompt} getPlacementSuggestion={getPlacementSuggestion} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene}/>      
+            <PlacementCard selectedProducts={selectedProducts} selectedModel={selectedModel} scenePrompt={scenePrompt} getPlacementSuggestion={getPlacementSuggestion} placementPrompt={placementPrompt} setPlacementPrompt={setPlacementPrompt} darkMode={darkMode} variants={variants} setVariants={setVariants} placeProductsInScene={placeProductsInScene} busyGen={busyGen}/>      
             {err && <div className={styles.errorMessage}>{err}</div>}
           </section>
           <section
@@ -614,12 +612,14 @@ export default function Page() {
             }`}
           >
             <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>
-            <EditResultCard editResultPrompt={editResultPrompt} setEditResultPrompt={setEditResultPrompt} darkMode={darkMode} resultDataUrls={resultDataUrls} busyGen={busyGen} busyPlacement={busyPlacement} busyScene={busyScene} selectedModel={selectedModel} editFinalImage={editFinalImage}/>
+            <EditResultCard editResultPrompt={editResultPrompt} setEditResultPrompt={setEditResultPrompt} darkMode={darkMode} resultDataUrls={resultDataUrls} busyGen={busyGen} selectedModel={selectedModel} editFinalImage={editFinalImage}/>
             {resultDataUrls.length != 0 && <button onClick={storeResults} disabled={busyDatabase || resultImagePrompt === ""}>Lagre Resultat</button>}
             {storageMessage != "" && <h3>{storageMessage}</h3>}
             <button onClick={reset}>Tøm alle input og resultater</button>        
-          </section>          
+          </section>                 
         </div>
+        <LoadingModal busyGen={busyGen} darkMode={darkMode}/>
+        <StoringModal busyDatabase={busyDatabase} darkMode={darkMode}/>     
       </main>
     </>
   );
