@@ -93,3 +93,10 @@ export interface Option {
     value: string;
     label: string;
 }
+
+export interface SearchSelectProps {
+    darkMode: boolean;
+    options: Option[];
+    selectedValue: Option | null;
+    setSelectedValue: ( param: Option | null ) => void;
+}
