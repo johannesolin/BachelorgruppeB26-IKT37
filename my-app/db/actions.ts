@@ -1,6 +1,6 @@
 import 'server-only';
 import { executeQuery, postImage } from "./db";
-import { PostEnviromentResultsProps, Product, PromptResultsProps } from './types';
+import { GetProductByCategoryProps, PostEnviromentResultsProps, Product, PromptResultsProps } from './types';
 
 // funksjon for søk etter produkt på produkt ID
 export async function getProductById(q: string): Promise<Product[]>{
@@ -13,6 +13,30 @@ export async function getProductById(q: string): Promise<Product[]>{
     } catch (error){
         throw new Error('Error getting product' + error)
     }
+}
+
+// funksjon for produkt søk etter kategorier
+export async function getProductByCategory( props: GetProductByCategoryProps ){
+    try{
+        const parameters = {
+            area: props.area,
+            category: props.category,
+            assortment: props.assortment,
+        };
+
+        console.log(parameters)
+
+        const data = await executeQuery('SELECT productId, name, categoryName, images FROM prod_analytics.student_2026.products WHERE areaName = :area AND categoryName = :category AND assortmentClassName = :assortment'
+            , parameters);
+
+        if(!data) throw new Error("Problem getting products from database with product category search");
+
+        return data as Product[];
+
+    } catch (e){
+        throw new Error("Error getting products " + e);
+    }
+    
 }
 
 // funksjon for lagring av miljøbilde og inforamsjon 

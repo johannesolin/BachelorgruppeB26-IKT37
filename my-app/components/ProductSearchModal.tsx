@@ -20,17 +20,22 @@ export function ProductSearchModal( props: ProductSearchModalProps ) {
   // variabler med verdier for valg menyene.
   const assortmentOptions: Option[] = ASSORTMENTCLASSNAME;
   const areaOptions: Option[] = AREANAME;
-  const categoryOptions: Option[] = CATEGORYNAME;      
+  const categoryOptions: Option[] = CATEGORYNAME;
+
+  function test(){
+    console.log(selectedArea?.value, selectedAssortment?.value, selectedCategory?.value )
+  }
 
   return createPortal(
       <div className={`${styles.modalOverlayShow}`}>
-          <div className={`${styles.modal} ${styles.configSection} ${
+          <div className={`${styles.modal_select} ${styles.configSection} ${
             props.darkMode ? styles.dark : styles.light
           }` }>
               <h2 className={`${styles.heading2} ${props.darkMode ? styles.dark : styles.light}`}>Laster...</h2>
               <SearchSelect darkMode={props.darkMode} selectedValue={selectedArea} setSelectedValue={setSelectedArea} options={areaOptions}/>
               <SearchSelect darkMode={props.darkMode} selectedValue={selectedCategory} setSelectedValue={setSelectedCategory} options={categoryOptions}/>
               <SearchSelect darkMode={props.darkMode} selectedValue={selectedAssortment} setSelectedValue={setSelecedAssortment} options={assortmentOptions}/>
+              <button onClick={() => props.productCategoriSearch(selectedArea?.value, selectedCategory?.value, selectedAssortment?.value)}>Søk</button>
               <button onClick={() => props.setSeachModalState(false)}>Lukk produktsøk</button>
           </div>
       </div>, 

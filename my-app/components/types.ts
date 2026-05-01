@@ -87,6 +87,7 @@ export interface ProductSearchModalProps {
     searchModalState: boolean;
     darkMode: boolean;
     setSeachModalState: (param: boolean) => void;
+    productCategoriSearch: (param: string | undefined, param2: string | undefined, param3: string | undefined) => void;
 }
 
 export interface Option {

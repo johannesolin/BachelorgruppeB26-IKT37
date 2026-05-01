@@ -1,5 +1,4 @@
 import Select, { StylesConfig } from "react-select";
-import styles from "../app/page.module.css";
 import { Option, SearchSelectProps } from "./types";
 
 export function SearchSelect( props: SearchSelectProps ){

@@ -33,3 +33,9 @@ export interface PromptResultsProps {
     model: string;
     prompt: string;
 }
+
+export interface GetProductByCategoryProps {
+    area: string;
+    category: string;
+    assortment: string;
+}

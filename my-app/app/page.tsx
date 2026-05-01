@@ -45,9 +45,12 @@ export default function Page() {
   // State for scenefiksing (scene refinement)
   const [sceneFixPrompt, setSceneFixPrompt] = useState("");
 
-  // State for produktvalg
+  // State for produkt valg variabler
   const [productIdInput, setProductIdInput] = useState("");
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+
+  // State variabler for kategori produktsøk
+  const [productCategoryList, setProductCategoryList] = useState();
 
   // State for plasseringsinstruksjoner
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
@@ -467,6 +470,44 @@ export default function Page() {
   }
 
   /*
+  * Funksjon for å produkt søk på produkt kategori.
+  */
+
+  async function productCategoriSearch( area: string | undefined, category: string | undefined, assortment: string | undefined) {
+    try{
+      setErr("");
+      setBusyDatabase(true);
+
+      if(!(area || category || assortment)) throw new Error("Mangler valg a minst en kategori ved produktsøk");
+
+      const body = JSON.stringify({
+        area,
+        category,
+        assortment,
+      })
+
+      const response = await fetch("/api/products/productByCategory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      })
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "produkt henting feilet");
+
+      console.log(data);
+
+      setProductCategoryList(data);
+      setBusyDatabase(false);
+    } catch (e){
+      console.error(e);
+      setBusyDatabase(false);
+      setErr("En feil oppsto ved produktsøk");
+      throw new Error("En feil oppsto ved produktsøk");
+    }
+  }
+
+  /*
   * Funksjon for å lagre miljøbilde resultat
   */
 
@@ -501,8 +542,6 @@ export default function Page() {
       const result = await response.json();
 
       if(!result) throw new Error("Lagring av resultater feilet " + result.error);
-
-      console.log(result);
 
       setResultEnvironmentPrompt("");
       setResultEnviromentModel("");
@@ -545,8 +584,6 @@ export default function Page() {
       const result = await response.json();
 
       if(!result) throw new Error("Lagring av resultater feilet" + result.error);
-
-      console.log(result);
 
       setResultImagePrompt("");
       setResultModel("");
@@ -622,7 +659,7 @@ export default function Page() {
             <button onClick={reset}>Tøm alle input og resultater</button>        
           </section>                 
         </div>
-        <ProductSearchModal darkMode={darkMode} searchModalState={searchModalState} setSeachModalState={setSearchModalState}/>
+        <ProductSearchModal darkMode={darkMode} searchModalState={searchModalState} setSeachModalState={setSearchModalState} productCategoriSearch={productCategoriSearch}/>
         <LoadingModal busyGen={busyGen} darkMode={darkMode}/>
         <StoringModal busyDatabase={busyDatabase} darkMode={darkMode}/>     
       </main>
