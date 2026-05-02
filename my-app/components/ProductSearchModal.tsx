@@ -22,10 +22,6 @@ export function ProductSearchModal( props: ProductSearchModalProps ) {
   const areaOptions: Option[] = AREANAME;
   const categoryOptions: Option[] = CATEGORYNAME;
 
-  function test(){
-    console.log(selectedArea?.value, selectedAssortment?.value, selectedCategory?.value )
-  }
-
   return createPortal(
       <div className={`${styles.modalOverlayShow}`}>
           <div className={`${styles.modal_select} ${styles.configSection} ${

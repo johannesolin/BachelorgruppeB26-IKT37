@@ -5,11 +5,16 @@ export interface ProductImage {
     width: number;
 }
 
-export interface Product {
+export interface ListProduct {
     productId: number;
     name: string;
+    areaName: string;
     categoryName: string;
+    assortmentClassName: string;
     images: ProductImage[];
+}
+
+export interface Product extends ListProduct {
     selectedImage: number; 
 }
 

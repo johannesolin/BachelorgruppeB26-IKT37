@@ -1,11 +1,11 @@
 import 'server-only';
 import { executeQuery, postImage } from "./db";
-import { GetProductByCategoryProps, PostEnviromentResultsProps, Product, PromptResultsProps } from './types';
+import { GetProductByCategoryProps, ListProduct, PostEnviromentResultsProps, Product, PromptResultsProps } from './types';
 
 // funksjon for søk etter produkt på produkt ID
 export async function getProductById(q: string): Promise<Product[]>{
     try{
-        const data = await executeQuery('SELECT productId, name, categoryName, images FROM prod_analytics.student_2026.products WHERE productId = :param', {param:  q});
+        const data = await executeQuery('SELECT productId, name, areaName, categoryName, assortmentClassName, images FROM prod_analytics.student_2026.products WHERE productId = :param', {param:  q});
         if(!data){
             throw new Error("No results returned");
         }
@@ -16,22 +16,24 @@ export async function getProductById(q: string): Promise<Product[]>{
 }
 
 // funksjon for produkt søk etter kategorier
-export async function getProductByCategory( props: GetProductByCategoryProps ){
-    try{
+export async function getProductByCategory(props: GetProductByCategoryProps): Promise<ListProduct[]>{
+    try{        
+        let sqlQuery = "SELECT productId, name, areaName, categoryName, assortmentClassName, images FROM prod_analytics.student_2026.products";
+        if(props.area && props.area.length > 0) sqlQuery = sqlQuery + " WHERE (areaName = :area)";
+        if(props.category && props.category.length > 0) sqlQuery = sqlQuery + " AND (categoryName = :category)";
+        if(props.assortment && props.assortment.length > 0) sqlQuery = sqlQuery + " AND (assortmentClassName = :assortment)";
+
         const parameters = {
-            area: props.area,
-            category: props.category,
-            assortment: props.assortment,
+            ...(props.area && props.area.length > 0 && { area: props.area }),
+            ...(props.category && props.category.length > 0 && { category: props.category }),
+            ...(props.assortment && props.assortment.length > 0 && { assortment: props.assortment }),
         };
 
-        console.log(parameters)
-
-        const data = await executeQuery('SELECT productId, name, categoryName, images FROM prod_analytics.student_2026.products WHERE areaName = :area AND categoryName = :category AND assortmentClassName = :assortment'
-            , parameters);
+        const data = await executeQuery(sqlQuery, parameters);
 
         if(!data) throw new Error("Problem getting products from database with product category search");
 
-        return data as Product[];
+        return data as ListProduct[];
 
     } catch (e){
         throw new Error("Error getting products " + e);

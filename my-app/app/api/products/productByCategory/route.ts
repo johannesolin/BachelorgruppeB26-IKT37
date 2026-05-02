@@ -7,7 +7,7 @@ export async function POST( req: Request) {
 
         const result = await getProductByCategory( { area: body.area, category: body.category, assortment: body.assortment})
 
-        if(!result || result.length === 0) return NextResponse.json({ error: "No product found"}, { status: 404});
+        if(!result) return NextResponse.json({ error: "No product found"}, { status: 404});
         
         return NextResponse.json(result);
 
