@@ -15,19 +15,23 @@ export async function getProductById(q: string): Promise<Product[]>{
     }
 }
 
-// funksjon for produkt søk etter kategorier
+// funksjon for produktsøk etter kategorier
 export async function getProductByCategory(props: GetProductByCategoryProps): Promise<ListProduct[]>{
     try{        
         let sqlQuery = "SELECT productId, name, areaName, categoryName, assortmentClassName, images FROM prod_analytics.student_2026.products";
-        if(props.area && props.area.length > 0) sqlQuery = sqlQuery + " WHERE (areaName = :area)";
-        if(props.category && props.category.length > 0) sqlQuery = sqlQuery + " AND (categoryName = :category)";
-        if(props.assortment && props.assortment.length > 0) sqlQuery = sqlQuery + " AND (assortmentClassName = :assortment)";
+        let sqlParams = "";
+
+        if(props.area && props.area.length > 0) sqlParams = sqlParams + " WHERE (areaName = :area)";
+        if(props.category && props.category.length > 0) sqlParams= sqlParams+ (sqlParams != "" ? " AND (categoryName = :category)" : " WHERE (categoryName = :category)");
+        if(props.assortment && props.assortment.length > 0) sqlParams = sqlParams + (sqlParams != "" ? " AND (assortmentClassName = :assortment)" : " WHERE (assortmentClassName = :assortment)");
+
+        sqlQuery = sqlQuery + sqlParams;
 
         const parameters = {
             ...(props.area && props.area.length > 0 && { area: props.area }),
             ...(props.category && props.category.length > 0 && { category: props.category }),
             ...(props.assortment && props.assortment.length > 0 && { assortment: props.assortment }),
-        };
+        };        
 
         const data = await executeQuery(sqlQuery, parameters);
 

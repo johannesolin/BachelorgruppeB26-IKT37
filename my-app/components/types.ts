@@ -1,6 +1,7 @@
 import { Template } from "@/templates/types";
-import { Product } from "../db/types";
+import { ListProduct, Product } from "../db/types";
 
+// interface/type til produkt kort component på hovedsiden
 export interface ProductCardProps {
     product: Product;
     selectedProducts: Product[];
@@ -11,6 +12,7 @@ export interface ProductCardProps {
     darkMode: boolean;
 }
 
+// type til miljøkort component på hovedsiden
 export interface EnvironmentCardProps {
     templateId: string;
     setTemplateId: (param: string) => void;
@@ -86,8 +88,11 @@ export interface StoringModalProps {
 export interface ProductSearchModalProps {
     searchModalState: boolean;
     darkMode: boolean;
+    productCategoryList: Product[] | [];
     setSeachModalState: (param: boolean) => void;
     productCategoriSearch: (param: string | undefined, param2: string | undefined, param3: string | undefined) => void;
+    addProductFromCategorySearch: ( param: ListProduct) => void;
+    selectedProducts: Product[] | [];
 }
 
 export interface Option {
@@ -100,4 +105,11 @@ export interface SearchSelectProps {
     options: Option[];
     selectedValue: Option | null;
     setSelectedValue: ( param: Option | null ) => void;
+}
+
+export interface ProductListProps {    
+    filteredProductList: Product[] | [];
+    darkMode: boolean;
+    addProductFromCategorySearch: ( param: ListProduct) => void;
+    selectedProducts: Product[] | [];
 }

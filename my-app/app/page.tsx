@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { DashboardNav } from "./navigation/DashboardNav";
 import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
-import { Product } from "@/db/types";
+import { ListProduct, Product } from "@/db/types";
 import { templatesArray } from "@/templates/templates";
 import { Template } from "@/templates/types";
 import { EnvironmentCard } from "@/components/EnvironmentCard";
@@ -50,7 +50,7 @@ export default function Page() {
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
 
   // State variabler for kategori produktsøk
-  const [productCategoryList, setProductCategoryList] = useState();
+  const [productCategoryList, setProductCategoryList] = useState<Product[] | []>([]);
 
   // State for plasseringsinstruksjoner
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
@@ -469,6 +469,17 @@ export default function Page() {
     }  
   }
 
+  function addProductFromCategorySearch( product: ListProduct ){
+    setErr("");
+    if(selectedProducts.length >= 4){
+      setErr("For mange produkter valgt");
+      throw new Error("For mange produkter valgt");
+    }
+    const temp = product as Product;
+    temp.selectedImage = 0;
+    setSelectedProducts((prev) =>  [...prev, temp]);
+  }
+
   /*
   * Funksjon for å produkt søk på produkt kategori.
   */
@@ -477,6 +488,7 @@ export default function Page() {
     try{
       setErr("");
       setBusyDatabase(true);
+      setProductCategoryList([]);
 
       if(!(area || category || assortment)) throw new Error("Mangler valg a minst en kategori ved produktsøk");
 
@@ -494,8 +506,6 @@ export default function Page() {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "produkt henting feilet");
-
-      console.log(data);
 
       setProductCategoryList(data);
       setBusyDatabase(false);
@@ -659,7 +669,7 @@ export default function Page() {
             <button onClick={reset}>Tøm alle input og resultater</button>        
           </section>                 
         </div>
-        <ProductSearchModal darkMode={darkMode} searchModalState={searchModalState} setSeachModalState={setSearchModalState} productCategoriSearch={productCategoriSearch}/>
+        <ProductSearchModal addProductFromCategorySearch={addProductFromCategorySearch} selectedProducts={selectedProducts} darkMode={darkMode} searchModalState={searchModalState} setSeachModalState={setSearchModalState} productCategoriSearch={productCategoriSearch} productCategoryList={productCategoryList}/>
         <LoadingModal busyGen={busyGen} darkMode={darkMode}/>
         <StoringModal busyDatabase={busyDatabase} darkMode={darkMode}/>     
       </main>
