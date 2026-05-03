@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { DashboardNav } from "./navigation/DashboardNav";
 import styles from "./page.module.css";
 import { getStoredTheme, saveTheme } from "../lib/theme";
-import { Product } from "@/db/types";
+import { ListProduct, Product } from "@/db/types";
 import { templatesArray } from "@/templates/templates";
 import { Template } from "@/templates/types";
 import { EnvironmentCard } from "@/components/EnvironmentCard";
@@ -14,6 +14,7 @@ import { SelectproductByIdCard } from "@/components/SelectProductByIdCard";
 import { EditResultCard } from "@/components/EditResultCard";
 import { LoadingModal } from "@/components/LoadingModal";
 import { StoringModal } from "@/components/StoringModal";
+import { ProductSearchModal } from "@/components/ProductSearchModal";
 
 /*
  * Hovedkomponent for dashbordet.
@@ -44,9 +45,12 @@ export default function Page() {
   // State for scenefiksing (scene refinement)
   const [sceneFixPrompt, setSceneFixPrompt] = useState("");
 
-  // State for produktvalg
+  // State for produkt valg variabler
   const [productIdInput, setProductIdInput] = useState("");
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+
+  // State variabler for kategori produktsøk
+  const [productCategoryList, setProductCategoryList] = useState<Product[] | []>([]);
 
   // State for plasseringsinstruksjoner
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
@@ -72,6 +76,9 @@ export default function Page() {
 
   // State for bekreftelse av DB lagring
   const [storageMessage, setStorageMessage] = useState<string>("");
+
+  // State for åpning av produkt søk modal
+  const [searchModalState, setSearchModalState] = useState<boolean>(false);
 
   // State for mørkt/lyst tema
   const [darkMode, setDarkModeState] = useState<boolean>(true);
@@ -462,6 +469,54 @@ export default function Page() {
     }  
   }
 
+  function addProductFromCategorySearch( product: ListProduct ){
+    setErr("");
+    if(selectedProducts.length >= 4){
+      setErr("For mange produkter valgt");
+      throw new Error("For mange produkter valgt");
+    }
+    const temp = product as Product;
+    temp.selectedImage = 0;
+    setSelectedProducts((prev) =>  [...prev, temp]);
+  }
+
+  /*
+  * Funksjon for å produkt søk på produkt kategori.
+  */
+
+  async function productCategoriSearch( area: string | undefined, category: string | undefined, assortment: string | undefined) {
+    try{
+      setErr("");
+      setBusyDatabase(true);
+      setProductCategoryList([]);
+
+      if(!(area || category || assortment)) throw new Error("Mangler valg a minst en kategori ved produktsøk");
+
+      const body = JSON.stringify({
+        area,
+        category,
+        assortment,
+      })
+
+      const response = await fetch("/api/products/productByCategory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      })
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "produkt henting feilet");
+
+      setProductCategoryList(data);
+      setBusyDatabase(false);
+    } catch (e){
+      console.error(e);
+      setBusyDatabase(false);
+      setErr("En feil oppsto ved produktsøk");
+      throw new Error("En feil oppsto ved produktsøk");
+    }
+  }
+
   /*
   * Funksjon for å lagre miljøbilde resultat
   */
@@ -497,8 +552,6 @@ export default function Page() {
       const result = await response.json();
 
       if(!result) throw new Error("Lagring av resultater feilet " + result.error);
-
-      console.log(result);
 
       setResultEnvironmentPrompt("");
       setResultEnviromentModel("");
@@ -541,8 +594,6 @@ export default function Page() {
       const result = await response.json();
 
       if(!result) throw new Error("Lagring av resultater feilet" + result.error);
-
-      console.log(result);
 
       setResultImagePrompt("");
       setResultModel("");
@@ -588,7 +639,7 @@ export default function Page() {
               Skriv inn Produkt ID
             </div>
             {/* Valg av produkt */}
-            <SelectproductByIdCard productIdInput={productIdInput} setProductIdInput={setProductIdInput} darkMode={darkMode} addProductId={addProductId} selectedProducts={selectedProducts} busyDatabase={busyDatabase}/>
+            <SelectproductByIdCard setSearchModalState={setSearchModalState} productIdInput={productIdInput} setProductIdInput={setProductIdInput} darkMode={darkMode} addProductId={addProductId} selectedProducts={selectedProducts} busyDatabase={busyDatabase}/>
             {/* input av fil */}            
             {/** Visning av valgte produkter */}
             {selectedProducts.length > 0 && (
@@ -618,6 +669,7 @@ export default function Page() {
             <button onClick={reset}>Tøm alle input og resultater</button>        
           </section>                 
         </div>
+        <ProductSearchModal addProductFromCategorySearch={addProductFromCategorySearch} selectedProducts={selectedProducts} darkMode={darkMode} searchModalState={searchModalState} setSeachModalState={setSearchModalState} productCategoriSearch={productCategoriSearch} productCategoryList={productCategoryList}/>
         <LoadingModal busyGen={busyGen} darkMode={darkMode}/>
         <StoringModal busyDatabase={busyDatabase} darkMode={darkMode}/>     
       </main>

@@ -1,0 +1,33 @@
+const RAW_OPTIONS = [
+  "Godteri og Snacks",
+  "Hus og hage",
+  "Klær og sko",
+  "Dagligvare",
+  "Reise, sport og fritid",
+  "Home",
+  "Kjøkken",
+  "Personlig pleie",
+  "Hobby og kontor",
+  "Oppbevaring",
+  "Dyremat og dyretilbehør",
+  "Markedsmateriell",
+  "Fikse Selv",
+  "Vask og rengjøring",
+  "Elektronikk",
+  "FOOD",
+  "DIVERSE",
+  "VERKTØY/ HAGE/ HOBBY",
+  "FRITID",
+  "TJENESTER",
+  "INTERIØR",
+  "REGNSKAP",
+  "DUMMY",
+  "TEKSTILER",
+  "Tepper og hjemtekstil",
+  "null",
+];
+
+export const AREANAME = RAW_OPTIONS.map((c) => ({
+    value: c,
+    label: c,
+}));

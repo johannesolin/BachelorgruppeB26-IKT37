@@ -5,11 +5,16 @@ export interface ProductImage {
     width: number;
 }
 
-export interface Product {
+export interface ListProduct {
     productId: number;
     name: string;
+    areaName: string;
     categoryName: string;
+    assortmentClassName: string;
     images: ProductImage[];
+}
+
+export interface Product extends ListProduct {
     selectedImage: number; 
 }
 
@@ -32,4 +37,10 @@ export interface PromptResultsProps {
     imageLink: string;
     model: string;
     prompt: string;
+}
+
+export interface GetProductByCategoryProps {
+    area: string;
+    category: string;
+    assortment: string;
 }

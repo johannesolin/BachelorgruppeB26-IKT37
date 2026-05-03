@@ -1,6 +1,7 @@
 import { Template } from "@/templates/types";
-import { Product } from "../db/types";
+import { ListProduct, Product } from "../db/types";
 
+// interface/type til produkt kort component på hovedsiden
 export interface ProductCardProps {
     product: Product;
     selectedProducts: Product[];
@@ -11,6 +12,7 @@ export interface ProductCardProps {
     darkMode: boolean;
 }
 
+// type til miljøkort component på hovedsiden
 export interface EnvironmentCardProps {
     templateId: string;
     setTemplateId: (param: string) => void;
@@ -59,7 +61,8 @@ export interface SelectProductByIdCardProps {
     darkMode: boolean;
     addProductId: () => void;
     selectedProducts: Product[];
-    busyDatabase: boolean;  
+    busyDatabase: boolean;
+    setSearchModalState: (param: boolean) => void; 
 }
 
 export interface EditResultCardProps {
@@ -80,4 +83,33 @@ export interface LoadingModalProps {
 export interface StoringModalProps {
     busyDatabase: boolean;
     darkMode: boolean;
+}
+
+export interface ProductSearchModalProps {
+    searchModalState: boolean;
+    darkMode: boolean;
+    productCategoryList: Product[] | [];
+    setSeachModalState: (param: boolean) => void;
+    productCategoriSearch: (param: string | undefined, param2: string | undefined, param3: string | undefined) => void;
+    addProductFromCategorySearch: ( param: ListProduct) => void;
+    selectedProducts: Product[] | [];
+}
+
+export interface Option {
+    value: string;
+    label: string;
+}
+
+export interface SearchSelectProps {
+    darkMode: boolean;
+    options: Option[];
+    selectedValue: Option | null;
+    setSelectedValue: ( param: Option | null ) => void;
+}
+
+export interface ProductListProps {    
+    filteredProductList: Product[] | [];
+    darkMode: boolean;
+    addProductFromCategorySearch: ( param: ListProduct) => void;
+    selectedProducts: Product[] | [];
 }
