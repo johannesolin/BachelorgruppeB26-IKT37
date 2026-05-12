@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bachelorgruppe B26 - IKT37",
+  title: "BildeGenereringsVerktøyEP",
   description: "Laget av Studenter",
 };
 
