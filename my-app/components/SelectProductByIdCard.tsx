@@ -8,6 +8,7 @@ export function SelectproductByIdCard( props: SelectProductByIdCardProps ){
               <input
                 value={props.productIdInput}
                 onChange={(e) => props.setProductIdInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") props.addProductId(); }}
                 placeholder="Produktnummer Her..."
                 className={`${styles.input} ${styles.flex1} ${
                   props.darkMode ? styles.dark : styles.light

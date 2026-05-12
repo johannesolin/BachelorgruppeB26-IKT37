@@ -65,6 +65,9 @@
   margin-bottom: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 /*

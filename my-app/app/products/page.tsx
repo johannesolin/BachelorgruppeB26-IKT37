@@ -87,26 +87,24 @@ export default function ProduktSide() {
     setBestHref("");
 
     try {
-      const response = await fetch(
-        `/api/search-product?q=${encodeURIComponent(searchQuery)}`,
-      );
+      const response = await fetch("/api/products/by-id", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: searchQuery.trim() }),
+      });
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "En feil oppstod ved søk");
-        return;
-      }
-
-      if (!data.product) {
+        setError(data.error || "Produkt ikke funnet");
         setNotFound(true);
-        setError("Produkt ikke funnet");
         return;
       }
 
       // Oppdater state med funnet produkt og tilhørende bilde-URL
-      setProduct(data.product);
-      if (data.bestHref) {
-        setBestHref(data.bestHref);
+      setProduct(data);
+      const firstImage = data.images?.[0]?.href;
+      if (firstImage) {
+        setBestHref(firstImage);
       }
     } catch (err) {
       setError("Feil ved kommunikasjon med server");

@@ -1,6 +1,6 @@
 import 'server-only';
 import { executeQuery, postImage } from "./db";
-import { GetProductByCategoryProps, ListProduct, PostEnviromentResultsProps, Product, PromptResultsProps } from './types';
+import { EnvironmentResultRecord, GetProductByCategoryProps, ListProduct, PostEnviromentResultsProps, Product, ProductPlacementResultRecord, PromptResultsProps } from './types';
 
 // funksjon for søk etter produkt på produkt ID
 export async function getProductById(q: string): Promise<Product[]>{
@@ -72,7 +72,49 @@ export async function postEnvironmentResult( props: PostEnviromentResultsProps )
     }
 }
 
-// funksjon for lagring av miljøbilde med produkt placering og inforamsjon 
+// funksjoner for sletting av lagrede resultater
+export async function deleteEnvironmentResult(id: string): Promise<void> {
+    try {
+        await executeQuery('DELETE FROM prod_analytics.student_2026.enviroment_results WHERE id = :id', { id });
+    } catch (error) {
+        throw new Error('Error deleting environment result: ' + error);
+    }
+}
+
+export async function deleteProductPlacementResult(id: string): Promise<void> {
+    try {
+        await executeQuery('DELETE FROM prod_analytics.student_2026.product_placement_results WHERE id = :id', { id });
+    } catch (error) {
+        throw new Error('Error deleting placement result: ' + error);
+    }
+}
+
+// funksjoner for henting av lagrede resultater
+export async function getEnvironmentResults(): Promise<EnvironmentResultRecord[]> {
+    try {
+        const data = await executeQuery(
+            'SELECT id, created, imagelink, selected_model, category, prompt FROM prod_analytics.student_2026.enviroment_results ORDER BY created DESC LIMIT 50',
+            {}
+        );
+        return data as EnvironmentResultRecord[];
+    } catch (e) {
+        throw new Error('Error getting environment results: ' + e);
+    }
+}
+
+export async function getProductPlacementResults(): Promise<ProductPlacementResultRecord[]> {
+    try {
+        const data = await executeQuery(
+            'SELECT id, created, imagelink, selected_model, product_names, product_ids, prompt FROM prod_analytics.student_2026.product_placement_results ORDER BY created DESC LIMIT 50',
+            {}
+        );
+        return data as ProductPlacementResultRecord[];
+    } catch (e) {
+        throw new Error('Error getting product placement results: ' + e);
+    }
+}
+
+// funksjon for lagring av miljøbilde med produkt placering og inforamsjon
 export async function postPromptResults( props: PromptResultsProps ) {
     try{
         const imageLink = `/Volumes/prod_analytics/student_2026/prompt_results/productPlacment/${props.id}.jpg`

@@ -2,12 +2,16 @@ import styles from "../app/page.module.css";
 import { PlacementCardProps } from "./types";
 
 export function PlacementCard( props: PlacementCardProps ){
+  const baseTime = props.selectedModel === "gpt-image-1.5" ? 25 : 15;
+  const extraPerVariant = props.selectedModel === "gpt-image-1.5" ? 12 : 7;
+  const estimatedTime = baseTime + (props.variants - 1) * extraPerVariant;
+
   return (
         <>
           <h2 className={`${styles.heading2Large} ${styles.heading2} ${props.darkMode ? styles.dark : styles.light}`}>
             ØNSKET PLASSERING PÅ PRODUKT(ENE)
           </h2>
-          <p>Skriv inn tekst for plassering av produkt(ene) i miljøbilde, eller hent forslag automatisk.</p>            
+          <p>Skriv inn tekst for plassering av produkt(ene) i miljøbilde, eller hent forslag automatisk.</p>
           <textarea
             value={props.placementPrompt}
             onChange={(e) => props.setPlacementPrompt(e.target.value)}
@@ -39,6 +43,11 @@ export function PlacementCard( props: PlacementCardProps ){
               {props.busyGen ? "Genererer..." : "Generer"}
             </button>
           </div>
+          {props.selectedModel !== "" && (
+            <div className={styles.timeEstimate}>
+              Estimert tid: ca. {estimatedTime} sek for {props.variants} variant{props.variants > 1 ? "er" : ""}
+            </div>
+          )}
         </>
     );
 }

@@ -54,6 +54,11 @@ export const EnvironmentCard = ( props: EnvironmentCardProps ) => {
               className={`${styles.textarea} ${props.darkMode ? styles.dark : styles.light}`}
             />
             <button onClick={props.generateScene} disabled={props.busyGen || props.selectedModel === ""}>{props.sceneUrl === "" ? "Generer Miljø" : "Regenerer Miljø" }</button>
+            {props.selectedModel !== "" && (
+              <div className={styles.timeEstimate}>
+                Estimert tid: ca. {props.selectedModel === "gpt-image-1.5" ? "25" : "15"} sek
+              </div>
+            )}
             {props.sceneUrl != "" && <button onClick={props.storeEnviromentResult} disabled={props.busyDatabase || props.enviromentCategory === ""}>Lagre Miljøbilde</button>}
             <div className={styles.sceneContainer}>
               <div className={styles.sceneLabel}>Miljøbilde</div>

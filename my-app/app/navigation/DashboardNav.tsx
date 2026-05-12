@@ -11,8 +11,8 @@ import { DashboardNavProps, NavItem } from "./types";
  */
 const navItems: NavItem[] = [
   { icon: "👤", label: "BRUKER", path: "/profil" },
-  { icon: "🔍", label: "SØK I PRODUKTER", path: "/products" },
   { icon: "📊", label: "KONTROLLPANEL", path: "/" },
+  { icon: "🔍", label: "SØK I PRODUKTER", path: "/products" },
 ];
 
 export function DashboardNav({
@@ -55,15 +55,6 @@ export function DashboardNav({
         >
           <span className={styles.smallIcon}>{darkMode ? "☀️" : "🌙"}</span>
           <span>{darkMode ? "Normalt tema" : "Dempet tema"}</span>
-        </button>
-
-        <button
-          onClick={handleLogout}
-          className={styles.secondaryButton}
-          title="Logg ut"
-        >
-          <span className={styles.smallIcon}>🚪</span>
-          <span>Logg ut</span>
         </button>
       </div>
     </nav>

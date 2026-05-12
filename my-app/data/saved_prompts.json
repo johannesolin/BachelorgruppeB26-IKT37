@@ -1,0 +1,16 @@
+[
+  {
+    "id": "e7298bb4-a418-49e1-aea6-b8c88074169d",
+    "created": "2026-05-12T14:05:52.613Z",
+    "prompt": "Plasser ANTIKKLYS LED 30 CM 2-PK MOSS GRØNN samlet på sidebordet ved lenestolen, som hovedfokus i scenen. Sett begge lysene stående oppreist tett sammen midt på bordflaten, med litt luft rundt slik at bordet fortsatt virker ryddig og moderne.\n\nLa hvert lys ha en troverdig høyde som omtrent tilsvarer høyden fra bordplaten opp til underkant av lenestolens armlene, eller litt lavere. Tykkelsen på hvert lys skal være slank og naturlig, klart smalere enn bredden på ett bordbein og små nok til å oppta bare en mindre del av bordplaten samlet.\n\nPlasseringen skal se naturlig ut i dagslyset, med realistiske skygger på bordet og uten andre gjenstander på overflatene.",
+    "model": "flux-2-pro",
+    "prompt_type": "placement"
+  },
+  {
+    "id": "c553d262-f294-4701-82f7-c040931a799c",
+    "created": "2026-05-12T14:05:51.360Z",
+    "prompt": "Moderne stue med lenestol og sidebord, overflater skal være tomme, naturlig dagslys, realistisk foto, realistiske skygger.",
+    "model": "flux-2-pro",
+    "prompt_type": "scene"
+  }
+]

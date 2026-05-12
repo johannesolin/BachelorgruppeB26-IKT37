@@ -44,3 +44,31 @@ export interface GetProductByCategoryProps {
     category: string;
     assortment: string;
 }
+
+export interface EnvironmentResultRecord {
+    id: string;
+    created: string;
+    imagelink: string;
+    selected_model: string;
+    category: string;
+    prompt: string;
+}
+
+export interface ProductPlacementResultRecord {
+    id: string;
+    created: string;
+    imagelink: string;
+    selected_model: string;
+    product_names: string;
+    product_ids: string;
+    prompt: string;
+}
+
+export interface SavedPrompt {
+    id: string;
+    created: string;
+    prompt: string;
+    model: string;
+    prompt_type: string;
+}
+

@@ -78,6 +78,8 @@ export interface EditResultCardProps {
 export interface LoadingModalProps {
     busyGen: boolean;
     darkMode: boolean;
+    selectedModel: "gpt-image-1.5" | "flux-2-pro" | "";
+    estimatedSeconds?: number;
 }
 
 export interface StoringModalProps {
@@ -107,9 +109,52 @@ export interface SearchSelectProps {
     setSelectedValue: ( param: Option | null ) => void;
 }
 
-export interface ProductListProps {    
+export interface ProductListProps {
     filteredProductList: Product[] | [];
     darkMode: boolean;
     addProductFromCategorySearch: ( param: ListProduct) => void;
     selectedProducts: Product[] | [];
+}
+
+// interfaces for profil-side sub-komponenter
+export interface ModelPropertyRowProps {
+    icon: string;
+    label: string;
+    value: string;
+    dark: boolean;
+}
+
+export interface ModelPricingSectionProps {
+    dark: boolean;
+    rows: { label: string; price: string }[];
+}
+
+export interface ProfilResultCardProps {
+    imagelink: string;
+    prompt: string;
+    model: string;
+    meta: string;
+    created: string;
+    dark: boolean;
+    onDelete?: () => Promise<void>;
+}
+
+export interface ProfilPromptRowProps {
+    prompt: string;
+    model: string;
+    type: string;
+    created: string;
+    dark: boolean;
+    onDelete?: () => Promise<void>;
+}
+
+export interface ModelCardProps {
+    icon: string;
+    name: string;
+    provider: string;
+    badgeVariant: "blue" | "purple";
+    description: string;
+    properties: Array<{ icon: string; label: string; value: string }>;
+    pricingRows: Array<{ label: string; price: string }>;
+    dark: boolean;
 }

@@ -55,6 +55,9 @@ export default function Page() {
   // State for plasseringsinstruksjoner
   const [placementPrompt, setPlacementPrompt] = useState<string>("");
 
+  // State for estimert generatortid (sendes til LoadingModal)
+  const [estimatedSeconds, setEstimatedSeconds] = useState<number>(20);
+
   // State for generering av resultater
   const [variants, setVariants] = useState<number>(1);
   const [resultDataUrls, setResultDataUrls] = useState<string[]>([]);
@@ -77,6 +80,9 @@ export default function Page() {
   // State for bekreftelse av DB lagring
   const [storageMessage, setStorageMessage] = useState<string>("");
 
+  // State for lagring av prompt bekreftelse
+  const [promptSaveMessage, setPromptSaveMessage] = useState<string>("");
+
   // State for åpning av produkt søk modal
   const [searchModalState, setSearchModalState] = useState<boolean>(false);
 
@@ -90,7 +96,20 @@ export default function Page() {
   useEffect(() => {
     const storedTheme = getStoredTheme();
     setDarkModeState(storedTheme === "dark");
+
+    // Gjenopprett input-felt fra forrige økt
+    const savedScene = localStorage.getItem("app-scene-prompt");
+    const savedPlacement = localStorage.getItem("app-placement-prompt");
+    const savedModel = localStorage.getItem("app-selected-model") as "gpt-image-1.5" | "flux-2-pro" | "";
+    if (savedScene !== null) setScenePrompt(savedScene);
+    if (savedPlacement !== null) setPlacementPrompt(savedPlacement);
+    if (savedModel) setSelectedModel(savedModel);
   }, []);
+
+  // Lagre input-felt til localStorage når de endres
+  useEffect(() => { localStorage.setItem("app-scene-prompt", scenePrompt); }, [scenePrompt]);
+  useEffect(() => { localStorage.setItem("app-placement-prompt", placementPrompt); }, [placementPrompt]);
+  useEffect(() => { localStorage.setItem("app-selected-model", selectedModel); }, [selectedModel]);
 
   /*
    * Setter mørkt/lyst tema og lagrer valget i localStorage.
@@ -116,11 +135,45 @@ export default function Page() {
   }, [darkMode]);
   
   /*
-   * Funksjon for hard refresh av applikasjonen.
+   * Tømmer alle input-felt, resultater og valgte produkter.
+   * Fjerner også lagrede input-felt fra localStorage.
    */
 
-  function reset(){    
-    window.location.reload();
+  function reset() {
+    localStorage.removeItem("app-scene-prompt");
+    localStorage.removeItem("app-placement-prompt");
+    localStorage.removeItem("app-selected-model");
+
+    setSelectedModel("");
+    setTemplateId(templates[0].id);
+    setScenePrompt(templates[0].scenePrompt);
+    setSceneUrl("");
+    setSceneTemplate(null);
+    setErr("");
+    setSceneFixPrompt("");
+    setProductIdInput("");
+    setSelectedProducts([]);
+    setProductCategoryList([]);
+    setPlacementPrompt("");
+    setVariants(1);
+    setResultDataUrls([]);
+    setSelectedVariant(0);
+    setEditResultPrompt("");
+    setResultEnvironmentPrompt("");
+    setEnviromentCategory("");
+    setResultEnviromentModel("");
+    setResultProductNames([]);
+    setResultProductIds([]);
+    setResultModel("");
+    setResultImagePrompt("");
+    setStorageMessage("");
+    setPromptSaveMessage("");
+  }
+
+  function getEstimate(model: string, variantCount = 1): number {
+    const base = model === "gpt-image-1.5" ? 25 : model === "flux-2-pro" ? 15 : 20;
+    const extra = model === "gpt-image-1.5" ? 12 : 7;
+    return base + (variantCount - 1) * extra;
   }
 
   /*
@@ -128,7 +181,8 @@ export default function Page() {
    */
 
   async function generateScene(){
-    try{    
+    try{
+      setEstimatedSeconds(getEstimate(selectedModel));
       setBusyGen(true);
       setErr("");
       setEditResultPrompt("");
@@ -183,6 +237,7 @@ export default function Page() {
 
   async function refineScene() {
     try{
+      setEstimatedSeconds(getEstimate(selectedModel));
       setStorageMessage("");
       setErr("");
       setBusyGen(true);
@@ -228,6 +283,7 @@ export default function Page() {
 
   async function placeProductsInScene() {
     try{
+      setEstimatedSeconds(getEstimate(selectedModel, variants));
       setErr("");
       setBusyGen(true);
       setResultDataUrls([]);
@@ -320,6 +376,7 @@ export default function Page() {
 
   async function editFinalImage(){
     try{
+      setEstimatedSeconds(getEstimate(selectedModel));
       setErr("");
       setBusyGen(true);      
 
@@ -564,7 +621,41 @@ export default function Page() {
   }
 
   /*
-  * Funksjon for å lagre resultater i promt database  
+  * Funksjon for å lagre en prompt separat i databasen
+  */
+
+  async function storePrompt(prompt: string, promptType: "scene" | "placement") {
+    try {
+      setErr("");
+      setBusyDatabase(true);
+
+      const body = JSON.stringify({
+        prompt: prompt.trim(),
+        model: selectedModel,
+        promptType,
+      });
+
+      const response = await fetch("/api/promptDb/save-prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+
+      const result = await response.json();
+      if (!result.success) throw new Error("Lagring av prompt feilet");
+
+      setPromptSaveMessage("Prompt lagret!");
+      setTimeout(() => setPromptSaveMessage(""), 3000);
+      setBusyDatabase(false);
+    } catch (e) {
+      setBusyDatabase(false);
+      setErr("Feil ved lagring av prompt");
+      throw new Error("Feil ved lagring av prompt " + e);
+    }
+  }
+
+  /*
+  * Funksjon for å lagre resultater i promt database
   */
 
   async function storeResults() {
@@ -628,7 +719,7 @@ export default function Page() {
               darkMode={darkMode} sceneUrl={sceneUrl} busyGen={busyGen} sceneFixPrompt={sceneFixPrompt} setSceneFixPrompt={setSceneFixPrompt} 
               refineScene={refineScene} selectedModel={selectedModel} setSelectedModel={setSelectedModel} busyDatabase={busyDatabase} storeEnviromentResult={storeEnviromentResult}
               enviromentCategory={enviromentCategory} setEnviromentCategory={setEnviromentCategory}/>
-            <h2>
+            <h2 className={`${styles.heading2} ${darkMode ? styles.dark : styles.light}`}>
               Velg 1–4 produkter
             </h2>
             <div
@@ -665,12 +756,30 @@ export default function Page() {
             <ResultsCard darkMode={darkMode} resultDataUrls={resultDataUrls} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant}/>
             <EditResultCard editResultPrompt={editResultPrompt} setEditResultPrompt={setEditResultPrompt} darkMode={darkMode} resultDataUrls={resultDataUrls} busyGen={busyGen} selectedModel={selectedModel} editFinalImage={editFinalImage}/>
             {resultDataUrls.length != 0 && <button onClick={storeResults} disabled={busyDatabase || resultImagePrompt === ""}>Lagre Resultat</button>}
-            {storageMessage != "" && <h3>{storageMessage}</h3>}
-            <button onClick={reset}>Tøm alle input og resultater</button>        
+            {storageMessage != "" && <h3 className={`${styles.heading3} ${darkMode ? styles.dark : styles.light}`}>{storageMessage}</h3>}
+            <h2 className={`${styles.heading2} ${darkMode ? styles.dark : styles.light}`}>Lagre Prompt</h2>
+            <button
+              type="button"
+              onClick={() => storePrompt(scenePrompt, "scene")}
+              disabled={busyDatabase || !scenePrompt.trim()}
+            >
+              Lagre Scene-Prompt
+            </button>
+            <button
+              type="button"
+              onClick={() => storePrompt(placementPrompt, "placement")}
+              disabled={busyDatabase || !placementPrompt.trim()}
+            >
+              Lagre Plasseringspromt
+            </button>
+            {promptSaveMessage !== "" && <h3 className={`${styles.heading3} ${darkMode ? styles.dark : styles.light}`}>{promptSaveMessage}</h3>}
           </section>                 
         </div>
+        <button type="button" onClick={reset} className={styles.resetButton}>
+          Tøm alt
+        </button>
         <ProductSearchModal addProductFromCategorySearch={addProductFromCategorySearch} selectedProducts={selectedProducts} darkMode={darkMode} searchModalState={searchModalState} setSeachModalState={setSearchModalState} productCategoriSearch={productCategoriSearch} productCategoryList={productCategoryList}/>
-        <LoadingModal busyGen={busyGen} darkMode={darkMode}/>
+        <LoadingModal busyGen={busyGen} darkMode={darkMode} selectedModel={selectedModel} estimatedSeconds={estimatedSeconds}/>
         <StoringModal busyDatabase={busyDatabase} darkMode={darkMode}/>     
       </main>
     </>
